@@ -23,18 +23,20 @@ public class ServerChatty {
     private DataInputStream in ;
     private PrintStream out ;
     private String ipAddress ;
-    private final static int PORT = 1234 ;
+    private static final int PORT = 1234 ;
+    private Scanner scan ;
 
 
     public ServerChatty() {
+        this.scan = new Scanner(System.in);
         // Initializing server
         try {
             this.server = new ServerSocket(PORT);
-            System.out.println("Server succesfully startd !");
+            System.out.println("Server succesfully started !");
             // Waiting for client connection
             System.out.println("Waiting for clients connections...");
             this.client = this.server.accept();
-            System.out.println("Client accpted !");
+            System.out.println("Client accepted !");
             // Setting in/out 
             this.in = new DataInputStream(new BufferedInputStream(this.client.getInputStream()));
             this.out = new PrintStream(this.client.getOutputStream());
@@ -70,14 +72,24 @@ public class ServerChatty {
     }
 
     public void chat() {
-        Scanner scan = new Scanner(System.in);
+
+        // Initializing Listening Thread
+        Thread listeningThread = new Thread(() -> {
+			String receveidMessage ;
+			try {
+				while ((receveidMessage = this.in.readUTF()) != null) {
+					System.out.println("\n Client# " + receveidMessage);
+				}
+			} catch (Exception e) {
+				System.out.println("Erreur lors de la réception du message");
+				e.printStackTrace();
+			}
+		});
+        listeningThread.start();
+
+        // Loop for chatting
         String msg = "" ;
         while (!msg.equals("exit")) {
-            try {
-                String receveid = this.in.readUTF();
-                System.out.println("Client# " + receveid);
-            } catch (Exception e) {
-            }
             System.out.print("Message à envoyer : ");
             msg = scan.nextLine();
             this.out.println(msg);

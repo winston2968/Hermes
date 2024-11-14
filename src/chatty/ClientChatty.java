@@ -15,6 +15,7 @@ public class ClientChatty {
 
 	public ClientChatty(String serverAddress, int port) {
 		// Trying to connect to the server
+		this.scan = new Scanner(System.in);
 		try {
 			this.socket = new Socket(serverAddress,port);
 			System.out.println("Connected to the server !");
@@ -31,22 +32,31 @@ public class ClientChatty {
 
 
     public void chat() {
-        Scanner scan = new Scanner(System.in);
+
+		// Initializing Listening Thread
+        Thread listeningThread = new Thread(() -> {
+			String receveidMessage ;
+			try {
+				while ((receveidMessage = this.in.readLine()) != null) {
+					System.out.println("\n Server# " + receveidMessage);
+				}
+			} catch (Exception e) {
+				System.out.println("Erreur lors de la réception du message");
+				e.printStackTrace();
+			}
+		});
+
+        listeningThread.start();
+
+		// Loop for chatting 
         String msg = "" ;
         while (!msg.equals("exit")) {
             System.out.print("Message à envoyer : ");
-            msg = scan.nextLine();
+            msg = this.scan.nextLine();
 			try {
 				this.out.writeUTF(msg);
 			} catch (Exception e) {
 			}
-			try {
-                String receveid = this.in.readLine();
-                System.out.println("Server# " + receveid);
-            } catch (Exception e) {
-            }
-            
-            
         }
     }
 
