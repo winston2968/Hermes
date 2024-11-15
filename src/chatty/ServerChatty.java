@@ -1,9 +1,8 @@
 package chatty;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.PrintWriter;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
@@ -11,9 +10,22 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.Scanner;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.io.InputStreamReader;
+
+import com.googlecode.lanterna.TerminalSize;
+import com.googlecode.lanterna.TextColor;
+import com.googlecode.lanterna.graphics.SimpleTheme;
+import com.googlecode.lanterna.gui2.BasicWindow;
+import com.googlecode.lanterna.gui2.Direction;
+import com.googlecode.lanterna.gui2.LinearLayout;
+import com.googlecode.lanterna.gui2.MultiWindowTextGUI;
+import com.googlecode.lanterna.gui2.Panel;
+import com.googlecode.lanterna.gui2.TextBox;
+import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
+import com.googlecode.lanterna.input.KeyStroke;
+import com.googlecode.lanterna.input.KeyType;
+import com.googlecode.lanterna.screen.Screen;
+import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
+
 import java.io.PrintStream;
 
 public class ServerChatty {
@@ -71,37 +83,93 @@ public class ServerChatty {
         }
     }
 
-    public void chat() {
+    public void chat() throws IOException {
+
+        // Creating the main window
+        Screen screen = new DefaultTerminalFactory().createScreen();
+        screen.startScreen();
+
+        WindowBasedTextGUI textGUI = new MultiWindowTextGUI(screen);
+        BasicWindow window = new BasicWindow("Chatty");
+
+        // Define custom colors themes for the window
+        SimpleTheme customTheme = new SimpleTheme(
+            TextColor.ANSI.BLACK,   // Texte par défaut
+            TextColor.ANSI.CYAN    // Fond par défaut
+        );
+
+        // Main panel with vertical separation
+        Panel mainPanel = new Panel();
+        mainPanel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
+
+        // History messages section
+        TextBox messageBox = new TextBox(new TerminalSize(60,20), TextBox.Style.MULTI_LINE);
+        messageBox.setReadOnly(true); // the user can't modify history messages
+        mainPanel.addComponent(messageBox);
+
+        // User input section
+        TextBox inputBox = new TextBox(new TerminalSize(60, 1));
+        mainPanel.addComponent(inputBox);
+
+        // Apply the theme to the window
+        textGUI.setTheme(customTheme);
+
+        // Thread to listen user entry
+        Thread userListenerThread = new Thread(() -> {
+            try {
+                while(true) {
+                    // Read the stroken key 
+                    KeyStroke keyStroke = screen.pollInput();
+                    if (keyStroke != null) {
+                        if (keyStroke.getKeyType() == KeyType.Enter) {
+                            // We send the message 
+                            String message = inputBox.getText();
+                            inputBox.setText("");
+                            this.out.println(message);
+                            if(!message.trim().isEmpty()) {
+                                messageBox.addLine("You# " + message);
+                            }
+                        }
+                    } else {
+                        // We add the hitten character to the inputBox
+                        inputBox.handleKeyStroke(keyStroke);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
 
         // Initializing Listening Thread
         Thread listeningThread = new Thread(() -> {
 			String receveidMessage ;
 			try {
 				while ((receveidMessage = this.in.readUTF()) != null) {
-					System.out.println("\n Client# " + receveidMessage);
+                    // Display the receveid message in the history box 
+					messageBox.addLine(receveidMessage);
 				}
 			} catch (Exception e) {
-				System.out.println("Erreur lors de la réception du message");
 				e.printStackTrace();
 			}
 		});
+
+        // Launching threads 
+        userListenerThread.start();
         listeningThread.start();
 
-        // Loop for chatting
-        String msg = "" ;
-        while (!msg.equals("exit")) {
-            System.out.print("Message à envoyer : ");
-            msg = scan.nextLine();
-            this.out.println(msg);
-            
-        }
+        // Display main window
+        window.setComponent(mainPanel);
+        textGUI.addWindowAndWait(window);
+
+        // Stop display when window closing
+        screen.stopScreen();
     }
 
 
 
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         ServerChatty server = new ServerChatty();
         server.chat();
     }
