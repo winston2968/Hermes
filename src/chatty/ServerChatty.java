@@ -11,21 +11,6 @@ import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.Scanner;
 
-import com.googlecode.lanterna.TerminalSize;
-import com.googlecode.lanterna.TextColor;
-import com.googlecode.lanterna.graphics.SimpleTheme;
-import com.googlecode.lanterna.gui2.BasicWindow;
-import com.googlecode.lanterna.gui2.Direction;
-import com.googlecode.lanterna.gui2.LinearLayout;
-import com.googlecode.lanterna.gui2.MultiWindowTextGUI;
-import com.googlecode.lanterna.gui2.Panel;
-import com.googlecode.lanterna.gui2.TextBox;
-import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
-import com.googlecode.lanterna.input.KeyStroke;
-import com.googlecode.lanterna.input.KeyType;
-import com.googlecode.lanterna.screen.Screen;
-import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
-
 import java.io.PrintStream;
 
 public class ServerChatty {
@@ -83,91 +68,56 @@ public class ServerChatty {
         }
     }
 
-    public void chat() throws IOException {
-
-        // Creating the main window
-        Screen screen = new DefaultTerminalFactory().createScreen();
-        screen.startScreen();
-
-        WindowBasedTextGUI textGUI = new MultiWindowTextGUI(screen);
-        BasicWindow window = new BasicWindow("Chatty");
-
-        // Define custom colors themes for the window
-        SimpleTheme customTheme = new SimpleTheme(
-            TextColor.ANSI.BLACK,   // Texte par défaut
-            TextColor.ANSI.CYAN    // Fond par défaut
-        );
-
-        // Main panel with vertical separation
-        Panel mainPanel = new Panel();
-        mainPanel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
-
-        // History messages section
-        TextBox messageBox = new TextBox(new TerminalSize(60,20), TextBox.Style.MULTI_LINE);
-        messageBox.setReadOnly(true); // the user can't modify history messages
-        mainPanel.addComponent(messageBox);
-
-        // User input section
-        TextBox inputBox = new TextBox(new TerminalSize(60, 1));
-        mainPanel.addComponent(inputBox);
-
-        // Apply the theme to the window
-        textGUI.setTheme(customTheme);
-
-        // Thread to listen user entry
-        Thread userListenerThread = new Thread(() -> {
-            try {
-                while(true) {
-                    // Read the stroken key 
-                    KeyStroke keyStroke = screen.pollInput();
-                    if (keyStroke != null) {
-                        if (keyStroke.getKeyType() == KeyType.Enter) {
-                            // We send the message 
-                            String message = inputBox.getText();
-                            inputBox.setText("");
-                            this.out.println(message);
-                            if(!message.trim().isEmpty()) {
-                                messageBox.addLine("You# " + message);
-                            }
-                        }
-                    } else {
-                        // We add the hitten character to the inputBox
-                        inputBox.handleKeyStroke(keyStroke);
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+    public void chat() {
 
         // Initializing Listening Thread
         Thread listeningThread = new Thread(() -> {
 			String receveidMessage ;
 			try {
 				while ((receveidMessage = this.in.readUTF()) != null) {
-                    // Display the receveid message in the history box 
-					messageBox.addLine(receveidMessage);
+                    if (receveidMessage.equals("exit")) {
+                        System.out.print("\r\033[K");
+                        System.out.println("Partner exiting, exit...");
+                        try {
+                            Thread.sleep(1000); /// wainting client to exiting
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        System.exit(0);
+                    }
+					// Detele old writed line 
+                    System.out.print("\r\033[K"); // Delete actuel terminal line
+					// System.out.print("\033[1A\033[2K"); // 1A: moving up, 2K: delete all line
+					System.out.println("Client# " + receveidMessage);
+					System.out.print("\n--- Enter Message # ");
 				}
 			} catch (Exception e) {
+				System.out.println("Error while receiving message");
 				e.printStackTrace();
 			}
 		});
 
-        // Launching threads 
-        userListenerThread.start();
         listeningThread.start();
 
-        // Display main window
-        window.setComponent(mainPanel);
-        textGUI.addWindowAndWait(window);
-
-        // Stop display when window closing
-        screen.stopScreen();
+		// Loop for chatting 
+        String msg = "" ;
+        while (!msg.equals("exit")) {
+            System.out.print("\n---- Enter Message # ");
+            msg = this.scan.nextLine();
+            // Delete entry line and write history
+            System.out.print("\033[1A\033[2K");
+            System.out.println("You# " + msg);
+			try {
+				this.out.println(msg);
+			} catch (Exception e) {
+			}
+        }
+        try {
+            Thread.sleep(1000); /// wainting client to exiting
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
-
-
-
-
 
     public static void main(String[] args) throws IOException {
         ServerChatty server = new ServerChatty();

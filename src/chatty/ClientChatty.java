@@ -37,10 +37,19 @@ public class ClientChatty {
 			String receveidMessage ;
 			try {
 				while ((receveidMessage = this.in.readLine()) != null) {
-					System.out.println("\n Server# " + receveidMessage);
+					if (receveidMessage.equals("exit")) {
+                        System.out.print("\r\033[K");
+                        System.out.println("Partner exiting, exit...");
+                        System.exit(0);
+                    }
+					// Detele old writed line 
+					System.out.print("\r\033[K");
+					// System.out.print("\033[1A\033[2K"); // 1A: moving up, 2K: delete all line
+					System.out.println("Server# " + receveidMessage);
+					System.out.print("\n--- Enter Message # ");
 				}
 			} catch (Exception e) {
-				System.out.println("Erreur lors de la réception du message");
+				System.out.println("Error while receiving message");
 				e.printStackTrace();
 			}
 		});
@@ -50,8 +59,12 @@ public class ClientChatty {
 		// Loop for chatting 
         String msg = "" ;
         while (!msg.equals("exit")) {
-            System.out.print("Message à envoyer : ");
+            System.out.print("\n---- Enter Message # ");
             msg = this.scan.nextLine();
+			// Delete entry line and write history
+			System.out.print("\033[1A\033[2K");
+			System.out.println("You# " + msg);
+			System.exit(0);
 			try {
 				this.out.writeUTF(msg);
 			} catch (Exception e) {
