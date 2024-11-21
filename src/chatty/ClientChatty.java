@@ -61,14 +61,13 @@ public class ClientChatty {
         while (!msg.equals("exit")) {
             System.out.print("\n---- Enter Message # ");
             msg = this.scan.nextLine();
-			// Delete entry line and write history
-			System.out.print("\033[1A\033[2K");
-			System.out.println("You# " + msg);
-			System.exit(0);
 			try {
 				this.out.writeUTF(msg);
 			} catch (Exception e) {
 			}
+			// Delete entry line and write history
+			System.out.print("\033[1A\033[2K");
+			System.out.println("You# " + msg);
         }
     }
 

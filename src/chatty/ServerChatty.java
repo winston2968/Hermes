@@ -84,12 +84,13 @@ public class ServerChatty {
                             e.printStackTrace();
                         }
                         System.exit(0);
+                    } else {
+                        // Detele old writed line 
+                        System.out.print("\r\033[K"); // Delete actuel terminal line
+                        // System.out.print("\033[1A\033[2K"); // 1A: moving up, 2K: delete all line
+                        System.out.println("Client# " + receveidMessage);
+                        System.out.print("\n--- Enter Message # ");
                     }
-					// Detele old writed line 
-                    System.out.print("\r\033[K"); // Delete actuel terminal line
-					// System.out.print("\033[1A\033[2K"); // 1A: moving up, 2K: delete all line
-					System.out.println("Client# " + receveidMessage);
-					System.out.print("\n--- Enter Message # ");
 				}
 			} catch (Exception e) {
 				System.out.println("Error while receiving message");
@@ -104,19 +105,15 @@ public class ServerChatty {
         while (!msg.equals("exit")) {
             System.out.print("\n---- Enter Message # ");
             msg = this.scan.nextLine();
-            // Delete entry line and write history
-            System.out.print("\033[1A\033[2K");
-            System.out.println("You# " + msg);
 			try {
 				this.out.println(msg);
 			} catch (Exception e) {
 			}
+             // Delete entry line and write history
+             System.out.print("\033[1A\033[2K");
+             System.out.println("You# " + msg);
         }
-        try {
-            Thread.sleep(1000); /// wainting client to exiting
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        System.exit(0);
     }
 
     public static void main(String[] args) throws IOException {

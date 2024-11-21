@@ -4,3 +4,19 @@
 |  _  ||  __/| |   | | | | | ||  __/\__ \
 |_| |_| \___||_|   |_| |_| |_| \___||___/
 
+
+### To-Do :
+    - Add cypher to Chatty 
+    - Start Hermes
+
+
+## Chatty
+
+- Utilisation d'un classe pour les messages 
+    Chaque message est formatté pour pouvoir être chiffré/déchiffré
+    J'utilise un clé RSA pour échanger les messages chiffrés.
+    Deux points positifs : plus de sécurité pour l'échange des clés et
+    plus de sécurité au niveau du chiffrement. La probabilité pour que quelqu'un 
+    réussisse à le casser est assez faible. 
+
+- 
