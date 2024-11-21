@@ -1,8 +1,8 @@
 package chatty;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
@@ -11,35 +11,55 @@ import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.Scanner;
 
-import java.io.PrintStream;
 
 public class ServerChatty {
     
     private ServerSocket server ;
     private Socket client ;
-    private DataInputStream in ;
-    private PrintStream out ;
+    private ObjectInputStream in ;
+    private ObjectOutputStream out ;
     private String ipAddress ;
     private static final int PORT = 1234 ;
     private Scanner scan ;
+    private String username ;
+    private Datagram datagram ;
 
 
     public ServerChatty() {
         this.scan = new Scanner(System.in);
+		// Setting usename 
+		System.out.println("Enter username for chatting...");
+		System.out.print("Chatty:/$ ");
+		this.username = this.scan.nextLine();
         // Initializing server
         try {
             this.server = new ServerSocket(PORT);
-            System.out.println("Server succesfully started !");
+            System.out.println("Chatty:/$ Server succesfully started !");
             // Waiting for client connection
-            System.out.println("Waiting for clients connections...");
+            System.out.println("Chatty:/$ Waiting for clients connections...");
             this.client = this.server.accept();
-            System.out.println("Client accepted !");
+            System.out.println("Chatty:/$ Client connected !");
             // Setting in/out 
-            this.in = new DataInputStream(new BufferedInputStream(this.client.getInputStream()));
-            this.out = new PrintStream(this.client.getOutputStream());
+            this.out = new ObjectOutputStream(client.getOutputStream());
+            this.in = new ObjectInputStream(client.getInputStream());
         } catch (Exception e) {
-            System.out.println("Error while setting server or accepting client");
+            System.out.println("Chatty:/$ Error while setting server or accepting client");
+            System.out.println("Chatty:/$ Exiting...");
+            System.exit(0);
         }
+
+
+        // Setting datagrams and security features 
+        this.datagram = new Datagram() ;
+        /* 
+        
+        // Sending actual public key to client 
+        this.out.write(this.datagram.getPublicKey());
+        // Get client public key 
+        try {
+            String pubClient = this.in.readUTF();
+        } */
+
     }
 
     public void setAddress() {
@@ -69,15 +89,22 @@ public class ServerChatty {
     }
 
     public void chat() {
+        System.out.println("Launched !");
 
         // Initializing Listening Thread
         Thread listeningThread = new Thread(() -> {
-			String receveidMessage ;
+			byte[] receveidMessage ;
 			try {
-				while ((receveidMessage = this.in.readUTF()) != null) {
-                    if (receveidMessage.equals("exit")) {
+				while ((receveidMessage = ((byte[]) this.in.readObject())) != null) {
+                    // Extract datagram informations 
+                    String[] infos  = this.datagram.byteToString(receveidMessage);
+                    // String date = infos[0];
+                    String time = infos[1];
+                    String name = infos[2];
+                    String msg = infos[3];
+                    if (msg.equals("exit")) {
                         System.out.print("\r\033[K");
-                        System.out.println("Partner exiting, exit...");
+                        System.out.println("Chatty:/$ Partner exiting, exit...");
                         try {
                             Thread.sleep(1000); /// wainting client to exiting
                         } catch (InterruptedException e) {
@@ -88,12 +115,12 @@ public class ServerChatty {
                         // Detele old writed line 
                         System.out.print("\r\033[K"); // Delete actuel terminal line
                         // System.out.print("\033[1A\033[2K"); // 1A: moving up, 2K: delete all line
-                        System.out.println("Client# " + receveidMessage);
-                        System.out.print("\n--- Enter Message # ");
+                        System.out.println(time + "-" + name + ":/$ " + msg);
+                        System.out.print("\nChatty:/$ ");
                     }
 				}
 			} catch (Exception e) {
-				System.out.println("Error while receiving message");
+				System.out.println("Chatty:/$ Error while receiving message");
 				e.printStackTrace();
 			}
 		});
@@ -103,15 +130,17 @@ public class ServerChatty {
 		// Loop for chatting 
         String msg = "" ;
         while (!msg.equals("exit")) {
-            System.out.print("\n---- Enter Message # ");
+            System.out.print("\nChatty:/$ ");
             msg = this.scan.nextLine();
+            // Create datagram to send message 
+			byte[] datas = this.datagram.stringToByte(msg, this.username);
 			try {
-				this.out.println(msg);
+				this.out.writeObject(datas);
 			} catch (Exception e) {
-			}
-             // Delete entry line and write history
-             System.out.print("\033[1A\033[2K");
-             System.out.println("You# " + msg);
+            }
+            // Delete entry line and write history
+            System.out.print("\033[1A\033[2K");
+            System.out.println(this.username + ":/$" + msg);
         }
         System.exit(0);
     }

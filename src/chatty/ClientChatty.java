@@ -1,7 +1,7 @@
 package chatty;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
+
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -9,47 +9,65 @@ public class ClientChatty {
 
 	private Socket socket ;
 	private Scanner scan ;
-	private DataOutputStream out ;
-	private BufferedReader in ;
+    private ObjectInputStream in ;
+    private ObjectOutputStream out ;
+	private String username ; 
+	private Datagram datagram ;
 
 	public ClientChatty(String serverAddress, int port) {
-		// Trying to connect to the server
 		this.scan = new Scanner(System.in);
+		// Setting usename 
+		System.out.println("Enter username for chatting...");
+		System.out.print("Chatty:/$ ");
+		this.username = this.scan.nextLine();
+		// Trying to connect to the server
 		try {
 			this.socket = new Socket(serverAddress,port);
-			System.out.println("Connected to the server !");
-
+			System.out.println("Chatty:/$ Connected to the server !");
+			System.out.println("Before creating");
 			// Setting in/out 
-			this.scan = new Scanner(System.in);
-			this.out = new DataOutputStream(socket.getOutputStream());
-			this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			this.in = new ObjectInputStream(socket.getInputStream());
+            this.out = new ObjectOutputStream(socket.getOutputStream());
+			System.out.println("After creating");
 
 		} catch (Exception e) {
-			System.out.println("Unable to connect to the server");
+			System.out.println("Chatty:/$ Unable to connect to the server");
 		}
+
+		// Setting security features 
+		this.datagram = new Datagram();
 	}
 
 
     public void chat() {
 
+		System.out.println("Launched !");
+
 		// Initializing Listening Thread
         Thread listeningThread = new Thread(() -> {
-			String receveidMessage ;
+			byte[] receveidMessage ;
 			try {
-				while ((receveidMessage = this.in.readLine()) != null) {
-					if (receveidMessage.equals("exit")) {
+				while ((receveidMessage = ((byte[]) this.in.readObject())) != null) {
+					// Extract datagram infos 
+					String[] infos  = this.datagram.byteToString(receveidMessage);
+                    // String date = infos[0];
+                    String time = infos[1];
+                    String name = infos[2];
+                    String msg = infos[3];
+					if (msg.equals("exit")) {
                         System.out.print("\r\033[K");
-                        System.out.println("Partner exiting, exit...");
+                        System.out.println("Chatty:/$ Partner exiting, exit...");
                         System.exit(0);
-                    }
-					// Detele old writed line 
-					System.out.print("\r\033[K");
-					// System.out.print("\033[1A\033[2K"); // 1A: moving up, 2K: delete all line
-					System.out.println("Server# " + receveidMessage);
-					System.out.print("\n--- Enter Message # ");
+                    } else {
+						// Detele old writed line 
+						System.out.print("\r\033[K");
+						// System.out.print("\033[1A\033[2K"); // 1A: moving up, 2K: delete all line
+						System.out.println(time + "-" + name + ":/$ " + msg);
+						System.out.print("\nChatty:/$ ");
+					}
 				}
 			} catch (Exception e) {
-				System.out.println("Error while receiving message");
+				System.out.println("Chatty:/$ Error while receiving message");
 				e.printStackTrace();
 			}
 		});
@@ -59,15 +77,17 @@ public class ClientChatty {
 		// Loop for chatting 
         String msg = "" ;
         while (!msg.equals("exit")) {
-            System.out.print("\n---- Enter Message # ");
+            System.out.print("\nChatty:/$ ");
             msg = this.scan.nextLine();
+			// Create datagram to send message 
+			byte[] datas = this.datagram.stringToByte(msg, this.username);
 			try {
-				this.out.writeUTF(msg);
+				this.out.writeObject(datas);
 			} catch (Exception e) {
 			}
 			// Delete entry line and write history
 			System.out.print("\033[1A\033[2K");
-			System.out.println("You# " + msg);
+			System.out.println(this.username + ":/$" + msg);
         }
     }
 

@@ -16,6 +16,7 @@ public class Datagram {
     private KeyPairGenerator rsaGenerator ;
     private KeyPair keyPair ;
     private Cipher cypher ; 
+    public PublicKey clientkey ;
 
     /* I use a special pattern for datagrams. I want to save the date 
      * when I send the datagram and who sent it.
@@ -40,7 +41,7 @@ public class Datagram {
         return this.keyPair.getPublic();
     }
 
-    private byte[] stringToByte(String msg, String username) {
+    public byte[] stringToByte(String msg, String username) {
         // Replace all ; in msg
         String msgClean = msg.replace(';', ' ');
         String usernameClean = username.replace(';', ' ');
@@ -55,7 +56,7 @@ public class Datagram {
         return finalMsg.getBytes(StandardCharsets.UTF_8);
     }
     
-    private String[] byteToString(byte[] datas) {
+    public String[] byteToString(byte[] datas) {
         String dataString = new String(datas, StandardCharsets.UTF_8);
         return dataString.split(";");
     } 
