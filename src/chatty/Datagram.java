@@ -41,17 +41,18 @@ public class Datagram {
         return this.keyPair.getPublic();
     }
 
-    public byte[] stringToByte(String msg, String username) {
+    public byte[] stringToByte(String msg, String username, String destinator) {
         // Replace all ; in msg
         String msgClean = msg.replace(';', ' ');
         String usernameClean = username.replace(';', ' ');
+        String destinatorClean = destinator.replace(';',' ');
         // Get current date and time 
         LocalDateTime now = LocalDateTime.now();
         // Formatting current date and time 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd;HH:mm:ss");
         // Export current date and hour to String 
         String formattedDateTime = now.format(formatter);
-        String finalMsg = formattedDateTime + ";" + usernameClean + ";" + msgClean;
+        String finalMsg = formattedDateTime + ";" + usernameClean + ";" + destinatorClean + ";" + msgClean;
         // Convert and return byte datagram 
         return finalMsg.getBytes(StandardCharsets.UTF_8);
     }
@@ -77,7 +78,7 @@ public class Datagram {
 
         Datagram algo = new Datagram();
 
-        byte[] datas = algo.stringToByte(msg, "Darm;anin");
+        byte[] datas = algo.stringToByte(msg, "Darm;anin", "Sarkozy");
         try {
             byte[] datasCypher = algo.cypher(datas);
             byte[] datasDecipher = algo.decypher(datasCypher);

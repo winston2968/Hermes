@@ -8,6 +8,7 @@ import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Scanner;
 
@@ -101,7 +102,7 @@ public class ServerChatty {
                     // String date = infos[0];
                     String time = infos[1];
                     String name = infos[2];
-                    String msg = infos[3];
+                    String msg = infos[4];
                     if (msg.equals("exit")) {
                         System.out.print("\r\033[K");
                         System.out.println("Chatty:/$ Partner exiting, exit...");
@@ -133,7 +134,7 @@ public class ServerChatty {
             System.out.print("\nChatty:/$ ");
             msg = this.scan.nextLine();
             // Create datagram to send message 
-			byte[] datas = this.datagram.stringToByte(msg, this.username);
+			byte[] datas = this.datagram.stringToByte(msg, this.username,"partner");
 			try {
 				this.out.writeObject(datas);
 			} catch (Exception e) {

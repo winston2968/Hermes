@@ -24,11 +24,9 @@ public class ClientChatty {
 		try {
 			this.socket = new Socket(serverAddress,port);
 			System.out.println("Chatty:/$ Connected to the server !");
-			System.out.println("Before creating");
 			// Setting in/out 
 			this.in = new ObjectInputStream(socket.getInputStream());
             this.out = new ObjectOutputStream(socket.getOutputStream());
-			System.out.println("After creating");
 
 		} catch (Exception e) {
 			System.out.println("Chatty:/$ Unable to connect to the server");
@@ -53,7 +51,7 @@ public class ClientChatty {
                     // String date = infos[0];
                     String time = infos[1];
                     String name = infos[2];
-                    String msg = infos[3];
+                    String msg = infos[4];
 					if (msg.equals("exit")) {
                         System.out.print("\r\033[K");
                         System.out.println("Chatty:/$ Partner exiting, exit...");
@@ -80,7 +78,7 @@ public class ClientChatty {
             System.out.print("\nChatty:/$ ");
             msg = this.scan.nextLine();
 			// Create datagram to send message 
-			byte[] datas = this.datagram.stringToByte(msg, this.username);
+			byte[] datas = this.datagram.stringToByte(msg, this.username, "partner");
 			try {
 				this.out.writeObject(datas);
 			} catch (Exception e) {
