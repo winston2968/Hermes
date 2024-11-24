@@ -3,6 +3,7 @@ package chatty;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.security.PublicKey;
 import java.util.Scanner;
 
 public class ClientChatty {
@@ -32,8 +33,18 @@ public class ClientChatty {
 			System.out.println("Chatty:/$ Unable to connect to the server");
 		}
 
-		// Setting security features 
-		this.datagram = new Datagram();
+		// Setting datagrams and security features 
+        this.datagram = new Datagram() ;
+
+        try {
+            // Get client public key 
+            this.datagram.setHisPublicKey( (PublicKey) this.in.readObject());
+			// Sending actual public key to client 
+            this.out.writeObject(this.datagram.getPublicKey());
+        } catch (Exception e) {
+            System.out.println("Chatty:/$ Error while sendding/getting public key...");
+            System.err.println(e);
+        }
 	}
 
 
@@ -78,14 +89,15 @@ public class ClientChatty {
             System.out.print("\nChatty:/$ ");
             msg = this.scan.nextLine();
 			// Create datagram to send message 
-			byte[] datas = this.datagram.stringToByte(msg, this.username, "partner");
 			try {
+				byte[] datas = this.datagram.stringToByte(msg, this.username, "partner");
 				this.out.writeObject(datas);
+				// Delete entry line and write history
+				System.out.print("\033[1A\033[2K");
+				System.out.println(this.username + ":/$" + msg);
 			} catch (Exception e) {
+				System.out.println("Chatty:/$ Error while encrypt datagram or sendding datas...");
 			}
-			// Delete entry line and write history
-			System.out.print("\033[1A\033[2K");
-			System.out.println(this.username + ":/$" + msg);
         }
     }
 

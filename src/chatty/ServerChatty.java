@@ -8,6 +8,7 @@ import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Scanner;
@@ -52,14 +53,17 @@ public class ServerChatty {
 
         // Setting datagrams and security features 
         this.datagram = new Datagram() ;
-        /* 
-        
-        // Sending actual public key to client 
-        this.out.write(this.datagram.getPublicKey());
-        // Get client public key 
+
         try {
-            String pubClient = this.in.readUTF();
-        } */
+            // Sending actual public key to client 
+            this.out.writeObject(this.datagram.getPublicKey());
+            // Get client public key 
+            this.datagram.setHisPublicKey( (PublicKey) this.in.readObject());
+            System.out.println("Public key : " + this.datagram.hisPublicKey.toString());
+        } catch (Exception e) {
+            System.out.println("Chatty:/$ Error while sendding/getting public key...");
+            System.err.println(e);
+        }
 
     }
 
@@ -133,17 +137,17 @@ public class ServerChatty {
         while (!msg.equals("exit")) {
             System.out.print("\nChatty:/$ ");
             msg = this.scan.nextLine();
-            // Create datagram to send message 
-			byte[] datas = this.datagram.stringToByte(msg, this.username,"partner");
-			try {
-				this.out.writeObject(datas);
-			} catch (Exception e) {
+            try {
+                // Create datagram to send message 
+			    byte[] datas = this.datagram.stringToByte(msg, this.username,"partner");
+                this.out.writeObject(datas);
+                // Delete entry line and write history
+                System.out.print("\033[1A\033[2K");
+                System.out.println(this.username + ":/$" + msg);
+            } catch (Exception e) {
+               System.out.println("Chatty:/$ Error while encrypting datagram or sending message.");
             }
-            // Delete entry line and write history
-            System.out.print("\033[1A\033[2K");
-            System.out.println(this.username + ":/$" + msg);
         }
-        System.exit(0);
     }
 
     public static void main(String[] args) throws IOException {
