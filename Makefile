@@ -12,6 +12,8 @@ JARS=$(LIB_DIR)/lanterna-3.1.1.jar
 # Main class
 MAIN_SERVER=chatty.ServerChatty
 MAIN_CLIENT=chatty.ClientChatty 
+MAIN_HERMES_SERVER = hermes.ServerHermes
+MAIN_HERMES_CLIENT = hermes.ClientHermes
 
 # Compilation command
 compile:
@@ -19,13 +21,21 @@ compile:
 	javac -d bin -cp lib/lanterna-3.1.1.jar @sources.txt
 	rm sources.txt
 
-# Run server
-run-server: compile
+# Run Chatty server
+run-chatty-server: compile
 	java -cp "$(BIN_DIR):$(JARS)" $(MAIN_SERVER)
 
-# Run client 
-run-client: compile
+# Run Chatty client 
+run-chatty-client: compile
 	java -cp "$(BIN_DIR):$(JARS)" $(MAIN_CLIENT)
+
+# Run hermes server
+run-hermes-server: compile
+	java -cp "$(BIN_DIR):$(JARS)" $(MAIN_HERMES_SERVER)
+
+# Run hermes client
+run-hermes-client: compile
+	java -cp "$(BIN_DIR):$(JARS)" $(MAIN_HERMES_CLIENT)
 
 # Clean compiled files
 clean:

@@ -6,8 +6,6 @@
 
 
 ### To-Do :
-    - Add cypher to Chatty 
-    - Start Hermes
 
 
 ## Chatty

@@ -1,4 +1,5 @@
-package chatty ;
+package chatty;
+
 
 
 import java.nio.charset.StandardCharsets;
@@ -8,7 +9,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 
 import javax.crypto.Cipher;
 
@@ -26,7 +26,7 @@ public class Datagram {
      * Datagram Format : Date;Hour;Username;Message
      */
 
-     // =====================================================================
+    // =====================================================================
     //                          Constructor
     // =====================================================================
 
@@ -103,7 +103,7 @@ public class Datagram {
     // =====================================================================
 
     public static void main(String[] args) {
-        
+        System.out.println("Hello there !");
     }
 
 

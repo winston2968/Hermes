@@ -1,6 +1,5 @@
 package chatty;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -9,7 +8,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.security.PublicKey;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Scanner;
 
@@ -59,7 +57,6 @@ public class ServerChatty {
             this.out.writeObject(this.datagram.getPublicKey());
             // Get client public key 
             this.datagram.setHisPublicKey( (PublicKey) this.in.readObject());
-            System.out.println("Public key : " + this.datagram.hisPublicKey.toString());
         } catch (Exception e) {
             System.out.println("Chatty:/$ Error while sendding/getting public key...");
             System.err.println(e);
@@ -150,7 +147,7 @@ public class ServerChatty {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         ServerChatty server = new ServerChatty();
         server.chat();
     }
