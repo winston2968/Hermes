@@ -1,13 +1,11 @@
 package hermes;
 
-import chatty.Datagram;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -81,20 +79,23 @@ public class ServerHermes {
     // =====================================================================
 
 
+
     public void runServer() {
 
         // Initializing accepting client thread
         Thread listenningNewClients = new Thread(() -> {
-            while (true) {
+            while(true) {
                 // Accepting client and create new client instance
                 // stored in clientsThreads list 
                 System.out.println("Hermes-Server:/$ Waiting for client connexions...");
                 try {
                     Socket client = this.server.accept();
                     // Creating new client handler for this client 
-                    ClientHandler clientInstance = new ClientHandler(client, this, this.receveidMessages);
+                    ClientHandler clientInstance = new ClientHandler(client, this, this.clientsList);
                     // Adding the new connected client to thee client list
                     this.clientsList.add(clientInstance);
+                    // Start new listening thread for the connected client
+                    new Thread(clientInstance).start();
                     System.out.println("Hermes-Server:/$ Adding new client !");
                 } catch (Exception e) {
                     System.out.println("Hermes-Server:/$ Error while accepting new client");
@@ -103,13 +104,39 @@ public class ServerHermes {
             }
         });
 
-
-
-
-
-
         // Launching accepting clients thread
         listenningNewClients.start();
+
+        /* 
+        // Debug thread to print current client list 
+        Thread printConnectedClients = new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+                System.out.println(this.clientsList.toString());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }); 
+        printConnectedClients.start(); */
+
+        /* // Infinite loop to process receveid messages
+        while(true) {
+            if (!this.receveidMessages.isEmpty()) {
+                synchronized (this.receveidMessages) {
+                    Iterator<String> iterator = receveidMessages.iterator();
+                    while (iterator.hasNext()) {
+                        String message = iterator.next();
+                        broadcast(message);
+                        iterator.remove(); // Remove message after boradcasting it 
+                    }
+                }
+            }
+            try {
+                Thread.sleep(100); // Attente avant de vérifier à nouveau
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } */
     }
 
 

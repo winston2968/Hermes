@@ -1,16 +1,15 @@
 package hermes;
 
-import chatty.Datagram;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.PublicKey;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 
-public class ClientHandler extends Thread {
+public class ClientHandler implements Runnable {
 
     private Socket client ;
     private ObjectInputStream in ;
@@ -18,14 +17,17 @@ public class ClientHandler extends Thread {
     // private String username ;
     // private String ipAddress
     private Package packet ;
-    public BlockingQueue<String> messagesQueue ;
     private ServerHermes server ;
+    private List<ClientHandler> clientsList ; 
 
     // =====================================================================
     //                          Constructor
     // =====================================================================
 
-    public ClientHandler (Socket client, ServerHermes server, BlockingQueue<String> serverReceveidMessages) throws IOException {
+    public ClientHandler (Socket client, ServerHermes server, List<ClientHandler> clients) throws IOException {
+        // Add link to clients list for routing messages
+        this.clientsList = clients ;
+
         // Create new client instance with in/out objects
         this.client = client ;
         this.server = server ;
@@ -49,9 +51,7 @@ public class ClientHandler extends Thread {
         }
         System.out.println("Hermes-Client:/$ Secure connexion established !");
 
-        // Connect new client to general receveid messages queue
-        this.messagesQueue = serverReceveidMessages ;
-
+        
     }
 
 
@@ -67,28 +67,45 @@ public class ClientHandler extends Thread {
             while ((receveidMessage = ((String) this.in.readObject())) != null) {
                 // There is a new messages
                 // We add it to the BlockingQueue
-                this.messagesQueue.add(receveidMessage);
+                System.out.println("Client-Handler:/$ Message received : " + receveidMessage);
+                // this.messagesQueue.add(receveidMessage);
+                this.broadcast(receveidMessage);
             }
         } catch (Exception e) {
             System.out.println("Hermes:/$ Error while reading client entry");
             System.err.println();
-        } finally {
             this.closeConnection();
         }
+    }
 
-        
+    public void broadcast(String message) {
+        synchronized(this.clientsList) {
+            for (int i = 0 ; i < this.clientsList.size(); i++) {
+                try {
+                    this.clientsList.get(i).sendDatagramm(message);
+                } catch (IOException e) {
+                    System.out.println("Hermes-Handler:/$ Error while broadcasting message...");
+                    e.printStackTrace();
+                    // Removing client 
+                    this.server.removeClient(this.clientsList.get(i));
+                }
+            }
+
+        }
     }
 
     // =====================================================================
-    //                          Thread Always running
+    //                          ----
     // =====================================================================
 
 
-    public void sendDatagramm(Datagram data) throws IOException {
-        this.out.writeObject(data);
+    public void sendDatagramm(String message) throws IOException {
+        this.out.writeObject(message);
     }
 
     public void closeConnection() {
+        // Remove client from general server clients list 
+        this.server.removeClient(this);
         // Properly remove client and close in/out
         try {
             if (this.in != null) this.in.close();
@@ -97,8 +114,6 @@ public class ClientHandler extends Thread {
         } catch (Exception e) {
             System.out.println("Hermes:/$ Client still not answer..removing...");
         }
-        // Remove client from general server clients list 
-        this.server.removeClient(this);
     }
     
 }

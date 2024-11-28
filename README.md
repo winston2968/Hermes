@@ -17,4 +17,5 @@
     plus de sécurité au niveau du chiffrement. La probabilité pour que quelqu'un 
     réussisse à le casser est assez faible. 
 
-- 
+- Ajouter le broadcast dans le ClientHandler
+- Laisser la gestion des clients au serveur

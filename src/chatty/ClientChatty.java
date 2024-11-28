@@ -50,7 +50,7 @@ public class ClientChatty {
 
     public void chat() {
 
-		System.out.println("Launched !");
+		// System.out.println("Launched !");
 
 		// Initializing Listening Thread
         Thread listeningThread = new Thread(() -> {

@@ -1,6 +1,6 @@
 package hermes;
 
-import java.io.IOException;
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -17,6 +17,10 @@ public class ClientHermes {
     private String serverIpAddress = "127.0.0.1";
     private final static int PORT = 1234 ;
 	private Package packet ;
+
+    // =====================================================================
+    //                          Constructor
+    // =====================================================================
 
     public ClientHermes() {
         // Setting username 
@@ -60,12 +64,57 @@ public class ClientHermes {
             System.exit(0);
         }
         System.out.println("Hermes-Client:/$ Secure connexion established !");
-
     } 
+
+    
+    // =====================================================================
+    //                          Chatting method
+    // =====================================================================
+
+    public void chat() {
+
+        // Initializing Listening Thread
+        Thread listeningThread = new Thread(() -> {
+			String receveidMessage ;
+			try {
+				while ((receveidMessage = ((String) this.in.readObject())) != null) {
+                    // Detele old writed line 
+                    System.out.print("\r\033[K");
+                    // System.out.print("\033[1A\033[2K"); // 1A: moving up, 2K: delete all line
+                    System.out.println("Message : " + receveidMessage);
+                    System.out.print("\nHermes-Client:/$ ");
+				}
+			} catch (Exception e) {
+				System.out.println("Hermes-Client:/$ Error while receiving message");
+				e.printStackTrace();
+			}
+		});
+
+        listeningThread.start();
+
+        // Loop for chatting 
+        String msg = "" ;
+        Scanner scan = new Scanner(System.in);
+        while (!msg.equals("exit")) {
+            System.out.print("\nHermes-Client:/$ ");
+            msg = scan.nextLine();
+			// Create datagram to send message 
+			try {
+				this.out.writeObject(msg);
+				// Delete entry line and write history
+				System.out.print("\033[1A\033[2K");
+				System.out.println(this.username + ":/$" + msg);
+			} catch (Exception e) {
+				System.out.println("Hermes-Client:/$ Error while encrypt datagram or sendding datas...");
+			}
+        }
+        System.exit(0);
+    }
 
 
     public static void main(String[] args){
         ClientHermes clienty = new ClientHermes();
+        clienty.chat();
 
     }
     
