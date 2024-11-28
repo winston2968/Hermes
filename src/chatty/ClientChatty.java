@@ -37,9 +37,9 @@ public class ClientChatty {
         this.datagram = new Datagram() ;
 
         try {
-            // Get client public key 
+            // Get server public key 
             this.datagram.setHisPublicKey( (PublicKey) this.in.readObject());
-			// Sending actual public key to client 
+			// Sending actual public key to server 
             this.out.writeObject(this.datagram.getPublicKey());
         } catch (Exception e) {
             System.out.println("Chatty:/$ Error while sendding/getting public key...");

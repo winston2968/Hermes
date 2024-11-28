@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.security.PublicKey;
 import java.util.concurrent.BlockingQueue;
 
 
@@ -16,6 +17,7 @@ public class ClientHandler extends Thread {
     private ObjectOutputStream out ;
     // private String username ;
     // private String ipAddress
+    private Package packet ;
     public BlockingQueue<String> messagesQueue ;
     private ServerHermes server ;
 
@@ -29,6 +31,23 @@ public class ClientHandler extends Thread {
         this.server = server ;
         this.out = new ObjectOutputStream(this.client.getOutputStream()) ; 
         this.in = new ObjectInputStream(this.client.getInputStream()) ;
+
+         // Setting security features 
+        this.packet = new Package();
+        // Exchange RSA keys
+        try {
+			// Sending actual RSA public key to server 
+            this.out.writeObject(this.packet.getPublicKey());
+            // Get server RSA public key 
+            this.packet.setHisPublicKey( (PublicKey) this.in.readObject());
+            // Send to client actual AES ciphered key
+            this.out.writeObject(this.packet.getAESCiphered());
+        } catch (Exception e) {
+            System.out.println("Hermes-Client:/$ Error while securing connexion...exiting.");
+            e.printStackTrace();
+            System.exit(0);
+        }
+        System.out.println("Hermes-Client:/$ Secure connexion established !");
 
         // Connect new client to general receveid messages queue
         this.messagesQueue = serverReceveidMessages ;

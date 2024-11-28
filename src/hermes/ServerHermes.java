@@ -7,6 +7,7 @@ import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -18,9 +19,9 @@ public class ServerHermes {
     
     // Server features 
     private ServerSocket server ;
-    private String ipAddress = "127.0.0.1";
+    private String ipAddress ;
     private static final int PORT = 1234 ;
-    // private Datagram datagram ;
+    private Package packet ;
 
     // Client management
     private BlockingQueue<String> receveidMessages ;
