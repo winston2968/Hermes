@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class ServerHermes {
     
@@ -22,7 +20,6 @@ public class ServerHermes {
     private Package packet ;
 
     // Client management
-    private BlockingQueue<String> receveidMessages ;
     private List<ClientHandler> clientsList = Collections.synchronizedList(new ArrayList<>());
  
 
@@ -65,11 +62,11 @@ public class ServerHermes {
             System.exit(0);
         }
 
-        // Initializing client management tools
-        this.receveidMessages = new LinkedBlockingQueue<>();
-
         // Setting local ipAddress for testing 
         this.ipAddress = "127.0.0.1";
+
+        // Initilizing package object to send AES keys and RSA keys
+        this.packet = new Package();
     }
 
 
@@ -85,20 +82,20 @@ public class ServerHermes {
         // Initializing accepting client thread
         Thread listenningNewClients = new Thread(() -> {
             while(true) {
+                System.out.println("looping");
                 // Accepting client and create new client instance
                 // stored in clientsThreads list 
-                System.out.println("Hermes-Server:/$ Waiting for client connexions...");
                 try {
                     Socket client = this.server.accept();
                     // Creating new client handler for this client 
-                    ClientHandler clientInstance = new ClientHandler(client, this, this.clientsList);
+                    ClientHandler clientInstance = new ClientHandler(client, this, this.clientsList, this.packet);
                     // Adding the new connected client to thee client list
                     this.clientsList.add(clientInstance);
-                    // Start new listening thread for the connected client
+                    // Starting client handler listening thread
                     new Thread(clientInstance).start();
-                    System.out.println("Hermes-Server:/$ Adding new client !");
                 } catch (Exception e) {
                     System.out.println("Hermes-Server:/$ Error while accepting new client");
+                    System.err.println(e);
                     e.printStackTrace();
                 }
             }
@@ -106,37 +103,6 @@ public class ServerHermes {
 
         // Launching accepting clients thread
         listenningNewClients.start();
-
-        /* 
-        // Debug thread to print current client list 
-        Thread printConnectedClients = new Thread(() -> {
-            try {
-                Thread.sleep(1000);
-                System.out.println(this.clientsList.toString());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }); 
-        printConnectedClients.start(); */
-
-        /* // Infinite loop to process receveid messages
-        while(true) {
-            if (!this.receveidMessages.isEmpty()) {
-                synchronized (this.receveidMessages) {
-                    Iterator<String> iterator = receveidMessages.iterator();
-                    while (iterator.hasNext()) {
-                        String message = iterator.next();
-                        broadcast(message);
-                        iterator.remove(); // Remove message after boradcasting it 
-                    }
-                }
-            }
-            try {
-                Thread.sleep(100); // Attente avant de vérifier à nouveau
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        } */
     }
 
 

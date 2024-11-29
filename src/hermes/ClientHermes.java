@@ -15,8 +15,9 @@ public class ClientHermes {
     private ObjectOutputStream out ;
 	private String username ; 
     private String serverIpAddress = "127.0.0.1";
-    private final static int PORT = 1234 ;
+    private static final int PORT = 1234 ;
 	private Package packet ;
+    private Scanner scan ;
 
     // =====================================================================
     //                          Constructor
@@ -24,7 +25,7 @@ public class ClientHermes {
 
     public ClientHermes() {
         // Setting username 
-        Scanner scan = new Scanner(System.in);
+        this.scan = new Scanner(System.in);
         System.out.print("Hermes-Client:/$ Enter username for chatting : ");
         this.username = scan.nextLine();
 
@@ -34,6 +35,7 @@ public class ClientHermes {
         this.serverIpAddress = scan.nextLine();
         scan.close();
         */
+        // this.scan.close();
 
         // Initializing socket and trying to connect to server
         try {
@@ -61,10 +63,30 @@ public class ClientHermes {
         } catch (Exception e) {
             System.out.println("Hermes-Client:/$ Error while securing connexion...exiting.");
             e.printStackTrace();
+            this.scan.close();
             System.exit(0);
         }
         System.out.println("Hermes-Client:/$ Secure connexion established !");
+
+        // Sending username to server for packages identification
+        try {
+            this.out.writeObject(this.packet.cipherStringAES(this.username));
+        } catch (Exception e) {
+            System.out.println("Hermes-Client:/$ Unable to send username...exiting");
+            System.err.println(e);
+            e.printStackTrace();
+            System.exit(0);
+        }
+
+        byte[] secretKeyEncoed = this.packet.aesKey.getEncoded();
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : secretKeyEncoed) {
+            hexString.append(String.format("%02X", b));
+        }
+        System.out.println("Clé AES : " + hexString);
     } 
+
+    
 
     
     // =====================================================================
@@ -75,13 +97,18 @@ public class ClientHermes {
 
         // Initializing Listening Thread
         Thread listeningThread = new Thread(() -> {
-			String receveidMessage ;
+			byte[][] receivedDatagram ;
 			try {
-				while ((receveidMessage = ((String) this.in.readObject())) != null) {
+				while ((receivedDatagram = ((byte[][]) this.in.readObject())) != null) {
+                    // Extracting datagram content 
+                    String[] decipheredDatagram = this.packet.decipherMessageAES(receivedDatagram);
+                    String partnerString = decipheredDatagram[1];
+                    String message = (decipheredDatagram[2].split(";"))[2];
+                    String time = (decipheredDatagram[2].split(";"))[1];
                     // Detele old writed line 
                     System.out.print("\r\033[K");
                     // System.out.print("\033[1A\033[2K"); // 1A: moving up, 2K: delete all line
-                    System.out.println("Message : " + receveidMessage);
+                    System.out.println(time + "-" + partnerString + ":/$ " + message);
                     System.out.print("\nHermes-Client:/$ ");
 				}
 			} catch (Exception e) {
@@ -94,13 +121,13 @@ public class ClientHermes {
 
         // Loop for chatting 
         String msg = "" ;
-        Scanner scan = new Scanner(System.in);
         while (!msg.equals("exit")) {
             System.out.print("\nHermes-Client:/$ ");
             msg = scan.nextLine();
 			// Create datagram to send message 
 			try {
-				this.out.writeObject(msg);
+                byte[][] datagram = this.packet.cipherMessageAES(this.username, "all", msg);
+				this.out.writeObject(datagram);
 				// Delete entry line and write history
 				System.out.print("\033[1A\033[2K");
 				System.out.println(this.username + ":/$" + msg);
@@ -108,6 +135,8 @@ public class ClientHermes {
 				System.out.println("Hermes-Client:/$ Error while encrypt datagram or sendding datas...");
 			}
         }
+        // Exiting the app
+        this.scan.close();
         System.exit(0);
     }
 
