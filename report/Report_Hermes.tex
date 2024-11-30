@@ -46,8 +46,83 @@ une communication sécurisée.
 
 \section{Hermes}
 
+\subsection{Principe}
 
+Ici, on attaque des choses un peu plus compliquées. 
+Un serveur accepte des connexion socket de clients et s'occupe de router les messages reçus vers les destinataires désignés. 
+On utilise des Threads pour permettre d'écouter et de gérer chaque client connecté séparément. 
 
+\subsection{La structure des messages - Classe \texttt{Package}}
+
+Comme pour Chatty, on utilise une classe spéciale pour gérer le chiffrement/déchiffrement des messages à envoyer via le socket. 
+Cela permet, d'une part de factoriser le code, côté server et client et d'autre part, de rajouter une couche d'abstraction. 
+Les attributs de la classe \texttt{Package} sont majoritairement privés, permettant une meilleure sécurité. 
+
+\subsubsection{Gestionnaire AES}
+
+On souhaite pouvoir échanger des messages via socket sans craindre de se faire observer. On va donc chiffrer tous les flux 
+traversant le socket via un algorithme de chiffrement, ici AES. 
+C'est un algorithme de chiffrement dit symétrique (même clé pour le chiffrement et déchiffrement). 
+On utilise principalement 4 méthodes pour permettre le chiffrement/déchiffrement avec AES : 
+\begin{itemize}
+    \item \texttt{cipherStringAES()} : Permet simplement le chiffrement d'une chaîne de caractère avec AES. 
+    On l'utilise pour envoyer le nom d'utilisateur du client au serveur à l'initialisation de connexion (utile pour le routage des paquets). 
+    \item \texttt{decipherToStringAES()} : L'inverse de la méthode précédente, elle déchiffre des tableaux de bits (\texttt{byte[]}) 
+    avec AES. Elle sert lors de la réception du nom d'utilisateur lors de l'initialisation de la connexion.
+    On s'en sert aussi lors du routage des paquets pour déchiffrer le nom d'utilisateur de l'envoyer et du destinataire. 
+    \item \texttt{cipherMessageAES()} : Côté client, elle permet de créer un paquet contenant date et heure d'envoi, utilisateur 
+    envoyeur du paquet, destinataire et message envoyé. Le tout méticuleusement chiffré avec une clé AES de 256 bits. 
+    \item \texttt{decipherMessageAES()} : coté client récepteur d'un paquet, elle extrait toutes les informations de celui-ci pour 
+    permettre leur traitement par le client après l'avoir déchiffré. 
+\end{itemize}
+
+Le problème est que, malgré la force d'AES, sa rapidité d'exécution et sa fiabilité, cela reste un algorithme de chiffrement symétrique. 
+Il faut donc que les deux parties s'échangent la clé à l'initialisation de la connexion pour permettre l'échange de messages chiffrés. 
+Il est bien évidement inenvisageable d'envoyer la clé AES en clair sur le réseau, la rendant visible pour toute personne écoutant le flux de paquets. 
+On utilise pour cela RSA...
+
+\subsubsection{Gestionnaire RSA}
+
+Tout comme AES, la classe \texttt{Package}, permet aux classes l'utilisant de chiffrer/déchiffrer avec l'algorithme RSA. 
+RSA est un algorithme de chiffrement asymétrique paru en 1977. Une clé (dite publique) sert à chiffrer les messages et une autre (dite privée) à les déchiffrer. 
+La force de cet algorithme est le fait que l'on ne peut retrouver la clé privée à partir de la clé publique en temps raisonnable. 
+
+On va donc se servir de RSA pour partager la clé AES entre le serveur et le client et ainsi permettre un échange de paquets en toute sécurité. 
+
+Ainsi, à l'initialisation de la connexion, le client, qui a généré des clés RSA à son instanciation envoie sa clé publique 
+au serveur pour que celui-ci lui renvoie la clé AES chiffrée en RSA qu'il utilise pour communiquer avec chaque client. 
+Le client reçoit alors un paquet constitué d'une séquence de bits apparement illisibles mais qu'il peut déchiffrer en une parfaite 
+clé AES pour ensuite envoyer des messages chiffrés avec celle-ci. 
+
+La classe \texttt{Package} permet différentes deux utilisations de l'algorithme RSA au travers de deux méthodes :
+\begin{itemize}
+    \item \texttt{getAESCiphered()} : Utilisée côté serveur, elle sert à chiffrer la clé AES générale avec la clé publique RSA 
+    du client pour la lui envoyer en toute sécurité. 
+    \item \texttt{setAESCiphered()} : Côté client, elle déchiffre le paquet reçu par le serveur chiffré en RSA pour récupérer la clé AES 
+    et la rajouter à son trousseau. La discussion peut ensuite commencer entre le serveur et le client sans que personne ne puisse savoir ce qu'il se disent.
+\end{itemize}
+
+On choisit volontairement d'utiliser deux méthodes de chiffrement pour une simple raison. 
+RSA étant très puissant, il est malgré tout très lent comparé à AES du fait qu'il utilise un algorithme assez complexe. 
+AES, quand à lui, est basé sur DES, algorithme effectuant seulement des permutations et xor de bits. 
+Ainsi, pour chiffrer un gros volume de bits et permettre l'envoi de long messages rapidement, sans trop de délai, AES est une option de choix. 
+On utilise donc RSA seulement pour envoyer la clé AES au début de la connexion. 
+
+\subsubsection{Structure d'un paquet}
+
+Les paquets envoyés dans le Socket par les client sont seulement des matrices de bits dont chaque ligne correspond à une information :
+\begin{itemize}
+    \item Les destinataire du paquet pour savoir, côté serveur, à qui faire parvenir le paquet. 
+    \item La personne ayant envoyé le paquet, pour éviter de lui renvoyer le paquet en cas de broadcast. 
+    \item Le message envoyé ainsi que la date et l'heure de l'envoi. 
+\end{itemize}
+Le tout, bien entendu, chiffré avec AES. 
+
+\subsection{Le serveur - Classe \texttt{ServerHermes}}
+
+\subsection{Le gestionnaire de clients - Classe \texttt{ClientHandler}}
+
+\subsection{Le client - Classe \texttt{ClientHermes}}
 
 
 
