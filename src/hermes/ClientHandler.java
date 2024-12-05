@@ -16,20 +16,19 @@ public class ClientHandler implements Runnable {
     private String username = null ;
     // private String ipAddress
     private Package packet ;
-    private ServerHermes server ;
     private List<ClientHandler> clientsList ; 
+    private Boolean running ;
 
     // =====================================================================
     //                          Constructor
     // =====================================================================
 
-    public ClientHandler (Socket client, ServerHermes server, List<ClientHandler> clients, Package serverPaquet) throws IOException {
+    public ClientHandler (Socket client, List<ClientHandler> clients, Package serverPaquet) throws IOException {
         // Add link to clients list for routing messages
         this.clientsList = clients ;
 
         // Create new client instance with in/out objects
         this.client = client ;
-        this.server = server ;
         this.out = new ObjectOutputStream(this.client.getOutputStream()) ; 
         this.in = new ObjectInputStream(this.client.getInputStream()) ;
 
@@ -48,7 +47,6 @@ public class ClientHandler implements Runnable {
             e.printStackTrace();
             System.exit(0);
         }
-        System.out.println("Hermes-Server:/$ Secure connexion established !");
 
         // Getting username 
         try {
@@ -56,8 +54,18 @@ public class ClientHandler implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // Allows thread to launch
+        this.running = true ;
     }
 
+    // =====================================================================
+    //                          Getter and Setter
+    // =====================================================================
+
+    public String getUsername() {
+        return this.username ;
+    }
 
     // =====================================================================
     //                          Thread Always running
@@ -68,16 +76,15 @@ public class ClientHandler implements Runnable {
         // Loop for listening client input 
         byte[][] receveidMessage ;
         try {
-            while ((receveidMessage = ((byte[][]) this.in.readObject())) != null) {
+            while ((receveidMessage = ((byte[][]) this.in.readObject())) != null && this.running) {
                 // Getting destinator/sender username 
                 String sender = this.packet.decipherToStringAES(receveidMessage[1]);
                 String destinator = this.packet.decipherToStringAES(receveidMessage[0]);
                 if (destinator.equals("all")) {
-                    this.broadcast(receveidMessage);
+                    this.broadcast(receveidMessage, sender);
                 } else {
                     // Find the destinator and sending him the message 
                     synchronized(this.clientsList) {
-                        System.out.println("Message received from : " + sender);
                         for (int i = 0 ; i < this.clientsList.size(); i++) {
                             if (this.clientsList.get(i).username.equals(destinator)) {
                                 this.clientsList.get(i).out.writeObject(receveidMessage);
@@ -87,22 +94,22 @@ public class ClientHandler implements Runnable {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Hermes-Server:/$ Error while reading client entry");
-            System.err.println();
-            this.closeConnection();
+            // System.out.println("Hermes-Server:/$ Error while reading client entry");
         }
     }
 
-    public void broadcast(byte[][] message) {
+    public void broadcast(byte[][] message, String exclude) {
         synchronized(this.clientsList) {
             for (int i = 0 ; i < this.clientsList.size(); i++) {
                 try {
-                    this.clientsList.get(i).sendDatagramm(message);
+                    // Sendding broadcast message to clients differents from sender
+                    if (!this.clientsList.get(i).getUsername().equals(exclude)) {
+                        this.clientsList.get(i).sendDatagramm(message);
+                    }
                 } catch (IOException e) {
                     System.out.println("Hermes-Server:/$ Error while broadcasting message...");
                     e.printStackTrace();
-                    // Removing client 
-                    this.server.removeClient(this.clientsList.get(i));
+                    this.clientsList.get(i).closeConnection();
                 }
             }
 
@@ -110,7 +117,7 @@ public class ClientHandler implements Runnable {
     }
 
     // =====================================================================
-    //                          ----
+    //                       Socket Interactions 
     // =====================================================================
 
 
@@ -119,15 +126,17 @@ public class ClientHandler implements Runnable {
     }
 
     public void closeConnection() {
-        // Remove client from general server clients list 
-        this.server.removeClient(this);
-        // Properly remove client and close in/out
         try {
+            // Stop listening thread
+            this.running = false ;
+            // Remove client from general server clients list 
+            this.clientsList.remove(this);
+            // Properly remove client and close in/out
             if (this.in != null) this.in.close();
             if (this.out != null) this.out.close();
             if (this.client != null) this.client.close();
         } catch (Exception e) {
-            System.out.println("Hermes-Server:/$ Client still not answer..removing...");
+            System.out.println("Hermes-Server:/$ Client " + this.username + " still don't responding, removed");
         }
     }
     

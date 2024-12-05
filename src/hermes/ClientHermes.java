@@ -48,7 +48,6 @@ public class ClientHermes {
             System.out.println("Hermes-Client:/$ Error while connecting to server...");
             e.printStackTrace();
         }
-        System.out.println("Hermes-Client:/$ Connected to the server !");
 
         // Setting security features 
         this.packet = new Package();
@@ -78,12 +77,17 @@ public class ClientHermes {
             System.exit(0);
         }
 
+        /* 
+        * If you want to see the AES key at the client connexion, uncomment 
+        * those lines ...
+
         byte[] secretKeyEncoed = this.packet.aesKey.getEncoded();
         StringBuilder hexString = new StringBuilder();
         for (byte b : secretKeyEncoed) {
             hexString.append(String.format("%02X", b));
         }
         System.out.println("Clé AES : " + hexString);
+        */
     } 
 
     
@@ -109,11 +113,13 @@ public class ClientHermes {
                     System.out.print("\r\033[K");
                     // System.out.print("\033[1A\033[2K"); // 1A: moving up, 2K: delete all line
                     System.out.println(time + "-" + partnerString + ":/$ " + message);
-                    System.out.print("\nHermes-Client:/$ ");
+                    System.out.print("Hermes-Client:/$ ");
 				}
 			} catch (Exception e) {
 				System.out.println("Hermes-Client:/$ Error while receiving message");
-				e.printStackTrace();
+                System.out.println("Hermes-Client:/$ Exiting...");
+                System.exit(0);
+				// e.printStackTrace();
 			}
 		});
 
