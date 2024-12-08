@@ -120,6 +120,16 @@ Le tout, bien entendu, chiffré avec AES.
 
 \subsection{Le serveur - Classe \texttt{ServerHermes}}
 
+La classe \texttt{ServerHermes} constitue le coeur même du serveur. 
+Elle permet deux choses :
+\begin{itemize}
+    \item \textbf{Initialiser le Socket : } à son lancement, elle ouvre un socket sur un port déterminé et génère les outils 
+    de sécurité nécessaires au bon fonctionnement d'\emph{Hermes}. 
+    \item \textbf{Accepter les connexions : } Un Thread permet d'accepter en continu les connexions de clients (classes \texttt{ClientHermes}). 
+    Une fois un client accepté, la méthode \texttt{runServer()} créé un nouveau \texttt{ClientHandler} pour gérer séparément 
+    la connexion avec le nouveau client connecté. 
+\end{itemize}
+
 \subsection{Le gestionnaire de clients - Classe \texttt{ClientHandler}}
 
 \subsection{Le client - Classe \texttt{ClientHermes}}

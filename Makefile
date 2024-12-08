@@ -18,7 +18,7 @@ MAIN_HERMES_CLIENT = hermes.ClientHermes
 # Compilation command
 compile:
 	find $(SRC_DIR) -name "*java" > sources.txt 
-	javac -d bin -cp lib/lanterna-3.1.1.jar @sources.txt
+	javac -d bin -cp lib/* @sources.txt
 	rm sources.txt
 
 # Run Chatty server
@@ -36,6 +36,10 @@ run-hermes-server: compile
 # Run hermes client
 run-hermes-client: compile
 	java -cp "$(BIN_DIR):$(JARS)" $(MAIN_HERMES_CLIENT)
+
+# Run client window
+run-hermes-clientGX: compile
+	java -cp "$(BIN_DIR):$(JARS)" hermes.ClientHermesGX
 
 # Clean compiled files
 clean:

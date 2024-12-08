@@ -125,12 +125,18 @@ public class ServerHermes {
         commandThread.start();
     }
 
+    // Properly stop the server by closing main socket
     public void stopServer() {
         try {
             this.server.close();
         } catch (Exception e) {
             System.out.println("Hermes-Server:/$ Failed to stop server properly...");
         }
+    }
+
+    // Send clients list to all clients connected
+    public void updateConnectedClients() {
+        // TODO : complete this method
     }
 
 
