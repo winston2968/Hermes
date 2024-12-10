@@ -12,9 +12,14 @@ import java.net.Socket;
 import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 
 
 public class ClientHermesGX extends JFrame implements ActionListener {
+
+    // =====================================================================
+    //                          Attributes
+    // =====================================================================
 
     // Connexions attributes 
     private Socket socket ;
@@ -24,6 +29,9 @@ public class ClientHermesGX extends JFrame implements ActionListener {
     private String serverIpAddress = "127.0.0.1";
     private static final int PORT = 1234 ;
     private Package packet ;
+    private String[] commands = {"/disconnect","/update-clients"};
+    private DefaultListModel<String> model ;
+    private JList<String> clientsJList  ;
     
     
     private JButton connect ;
@@ -34,9 +42,20 @@ public class ClientHermesGX extends JFrame implements ActionListener {
     private JTextArea history ;
 
 
+    // =====================================================================
+    //                          Constructor
+    // =====================================================================
+
+
     public ClientHermesGX() {
         super("Connexion Client - Hermes");
+        // Launching the connexion window
+        this.connexionWindow();
     }
+
+    // =====================================================================
+    //                       Connexion Stater
+    // =====================================================================
 
 
     // Starting connexion, connect to the server and get username
@@ -138,6 +157,11 @@ public class ClientHermesGX extends JFrame implements ActionListener {
         this.chat();
     }
 
+
+    // =====================================================================
+    //                          Chatting window
+    // =====================================================================
+
     public void chat() {
 
         // Chatting window
@@ -152,6 +176,7 @@ public class ClientHermesGX extends JFrame implements ActionListener {
 
         // Config Message Entry display
         this.messageEntry = new JTextField("Type a message...");
+        this.messageEntry.setBackground(new Color(0x000000));
         messagePanel.setBackground(new Color(0x000000));
         this.sendMessage = new JButton("Send");
         this.sendMessage.addActionListener(this);
@@ -182,10 +207,27 @@ public class ClientHermesGX extends JFrame implements ActionListener {
         JScrollPane capsuleHistory = new JScrollPane(history);
         capsuleHistory.setBackground(new Color(0x000000));
 
-        // Adding content to panels
+        // Config clients list display
+        this.model = new DefaultListModel<>();
+        this.clientsJList = new JList<>(model);
+        this.clientsJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.clientsJList.setBorder(BorderFactory.createTitledBorder("Connected People"));
+        clientsJList.setBackground(new Color(0x000000));
+        clientsJList.setForeground(Color.lightGray);
+
+        // Adding chat history and message input in left panel
         messagePanel.add(messageEntry,gridBag); messagePanel.add(sendMessage,gridBag);
-        this.add(capsuleHistory, BorderLayout.CENTER);
-        this.add(messagePanel, BorderLayout.SOUTH);
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightPanel.add(capsuleHistory,BorderLayout.CENTER);
+        rightPanel.add(messagePanel,BorderLayout.SOUTH);
+
+        // Setting up window separation for messages and clients list
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(clientsJList),rightPanel);
+        splitPane.setDividerLocation(200);
+
+
+        // Adding the splitPane to main window
+        this.add(splitPane);
 
         // Update window
         this.revalidate();
@@ -200,9 +242,20 @@ public class ClientHermesGX extends JFrame implements ActionListener {
                     String[] decipheredDatagram = this.packet.decipherMessageAES(receivedDatagram);
                     String partnerString = decipheredDatagram[1];
                     String message = (decipheredDatagram[2].split(";"))[2];
-                    String time = (decipheredDatagram[2].split(";"))[1];
-                    // Write new message on message history panel
-                    this.history.setText(this.history.getText() + "\n" + time + ":" + partnerString + ":/$ " + message);
+                    
+                    // Getting command if it's a command message
+                    String[] messageCut = message.split("-separator-");
+                    if (messageCut[0].equals(this.commands[0]) && partnerString.equals("Server")) {
+                        this.disconnect();
+                    } else if (messageCut[0].equals(this.commands[1]) && partnerString.equals("Server")) {
+                        String[] clients = ((messageCut[1].replace("[","")).replace("]","")).split(",");
+                        this.updateConnectedClients(clients);
+                    } else {
+                        String time = (decipheredDatagram[2].split(";"))[1];
+                        // Write new message on message history panel
+                        this.history.setText(this.history.getText() + "\n" + time + ":" + partnerString + " : " + message);
+                            
+                    }
                 }
             } catch (Exception e) {
                 System.err.println(e);
@@ -213,6 +266,31 @@ public class ClientHermesGX extends JFrame implements ActionListener {
 
     }
 
+    // =====================================================================
+    //                          Connexion Management
+    // =====================================================================
+
+    public void disconnect() {
+         // TODO : complete disconnect method 
+    }
+
+    
+    public void updateConnectedClients(String[] clients) {
+        // Update graphic clients list
+        SwingUtilities.invokeLater(() -> {
+            this.model.clear();
+            for (String client : clients) {
+                model.addElement(client);
+            }
+        });
+    }   
+    
+
+
+
+    // =====================================================================
+    //                     Window's action manager
+    // =====================================================================
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -239,13 +317,12 @@ public class ClientHermesGX extends JFrame implements ActionListener {
 
 
     public static void main(String[] args) {
-        ClientHermesGX clientGX = new ClientHermesGX();
-        clientGX.connexionWindow();
+        SwingUtilities.invokeLater(ClientHermesGX::new);
     }
 
-
     
-
+    
+    //TODO : disable clients to connect with username containing a space 
     
 
 

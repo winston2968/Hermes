@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -31,6 +32,13 @@ public class ServerHermes {
     // =====================================================================
 
     public ServerHermes() {
+        System.out.println(
+            "  _   _                                    \n" +
+            " | | | |  ___   _ __   _ __ ___    ___   ___ \n" +
+            " | |_| | / _ \\ | '__| | '_ ` _ \\  / _ \\ / __|\n" +
+            " |  _  ||  __/ | |    | | | | | ||  __/ \\__ \\\n" +
+            " |_| |_| \\___| |_|    |_| |_| |_| \\___| |___/\n"
+        );
         // Starting server
         try {
             this.server = new ServerSocket(PORT);
@@ -108,11 +116,13 @@ public class ServerHermes {
                     // Starting client handler listening thread
                     new Thread(clientInstance).start();
                     System.out.println("Hermes-Server-/$ New client added : " + clientInstance.getUsername());
+                    this.updateConnectedClients();
+                    System.out.println("Hermes-Server:/$ ConnectedClients list sent to all clients !");
                     System.out.print("Hermes-Server:/$ ");
                 } catch (Exception e) {
                     System.out.println("Hermes-Server:/$ Error while accepting new client");
-                    System.err.println(e);
-                    e.printStackTrace();
+                    // System.err.println(e);
+                    // e.printStackTrace();
                 }
             }
         });
@@ -136,10 +146,28 @@ public class ServerHermes {
 
     // Send clients list to all clients connected
     public void updateConnectedClients() {
-        // TODO : complete this method
+        synchronized (this.clientsList) {
+            // Convert client list to String[] of client's username
+            String[] usernameArray = new String[this.clientsList.size()];
+            for (int i = 0; i < this.clientsList.size(); i++) {
+                usernameArray[i] = this.clientsList.get(i).getUsername();
+            }
+
+            // Send clients array to all clients 
+            String messageString = "/update-clients-separator-" + Arrays.toString(usernameArray);
+            System.out.println(messageString);
+            try {
+                byte[][] datagram = this.packet.cipherMessageAES("Server", "all", messageString);
+                for (int i = 0 ; i < this.clientsList.size(); i++) {
+                    this.clientsList.get(i).sendDatagramm(datagram);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println(e);
+            }
+            
+        }
     }
-
-
 
     // =====================================================================
     //                          Tests
@@ -149,4 +177,6 @@ public class ServerHermes {
         ServerHermes hermy = new ServerHermes();
         hermy.runServer();
     }
+
+    // TODO : disable connection with "Server" ID
 }
