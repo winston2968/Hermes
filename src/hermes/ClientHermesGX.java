@@ -12,7 +12,6 @@ import java.net.Socket;
 import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 
 
 public class ClientHermesGX extends JFrame implements ActionListener {
@@ -125,8 +124,7 @@ public class ClientHermesGX extends JFrame implements ActionListener {
             this.out.flush();
             this.in = new ObjectInputStream(this.socket.getInputStream());
         } catch (Exception e) {
-            System.err.println(e);
-            e.printStackTrace();
+            new InfoWindow("Config-Error", "Failed to get server.\nExiting...");
         }
 
         // Setting security features 
@@ -140,7 +138,7 @@ public class ClientHermesGX extends JFrame implements ActionListener {
             // Get server AES key 
             this.packet.setAESCiphered((byte[]) this.in.readObject());
         } catch (Exception e) {
-            e.printStackTrace();
+            new InfoWindow("Config-Error", "Failed to set secure connexion.\nExiting...");
             System.exit(0);
         }
 
@@ -148,8 +146,7 @@ public class ClientHermesGX extends JFrame implements ActionListener {
         try {
             this.out.writeObject(this.packet.cipherStringAES(this.username));
         } catch (Exception e) {
-            System.err.println(e);
-            e.printStackTrace();
+            new InfoWindow("Config-Error", "Failed to send username.\nExiting...");
             System.exit(0);
         }
 
@@ -271,7 +268,16 @@ public class ClientHermesGX extends JFrame implements ActionListener {
     // =====================================================================
 
     public void disconnect() {
-         // TODO : complete disconnect method 
+        // Disconnect from server
+        try {
+            this.in.close();
+            this.out.close();
+            this.socket.close();
+            new InfoWindow("Info", "Disconnected from server.\nExiting...");
+        } catch (Exception e) {
+            new InfoWindow("Error", "Failed to close connexion properly.\nExiting...");
+        }
+        
     }
 
     
@@ -280,7 +286,9 @@ public class ClientHermesGX extends JFrame implements ActionListener {
         SwingUtilities.invokeLater(() -> {
             this.model.clear();
             for (String client : clients) {
-                model.addElement(client);
+                if (!(client.replace(" ", "")).equals(this.username)) {
+                    model.addElement((client.replace(" ", "")));
+                }
             }
         });
     }   
@@ -319,14 +327,6 @@ public class ClientHermesGX extends JFrame implements ActionListener {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(ClientHermesGX::new);
     }
-
-    
-    
-    //TODO : disable clients to connect with username containing a space 
-    
-
-
-    
 }
 
 

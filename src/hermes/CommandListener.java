@@ -71,7 +71,7 @@ public class CommandListener implements Runnable {
         // Starting by disconnect all clients 
         this.killAll();
         // Stoping server
-        this.server.stopServer();
+        // this.server.stopServer();
         System.out.println("Hermes-Server:/$ Server Stopped, exiting...");
         System.exit(0);
     }

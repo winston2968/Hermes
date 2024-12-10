@@ -94,7 +94,7 @@ public class ClientHandler implements Runnable {
                 }
             }
         } catch (Exception e) {
-            // System.out.println("Hermes-Server:/$ Error while reading client entry");
+            this.closeConnection();
         }
     }
 
