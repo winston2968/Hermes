@@ -5,6 +5,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.PublicKey;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class ClientHermes {
@@ -18,12 +20,24 @@ public class ClientHermes {
     private static final int PORT = 1234 ;
 	private Package packet ;
     private Scanner scan ;
+    private String[] serverCommands = {"/disconnect","/update-clients"};
+    private String[] connectedClients ;
+    private Boolean inputLoop = true ;
+    private Map<String, Runnable> clientCommands ;
 
     // =====================================================================
     //                          Constructor
     // =====================================================================
 
     public ClientHermes() {
+
+        System.out.println(
+    "  _   _                                       ____ _     ___ \n" +
+    " | | | |  ___   _ __   _ __ ___    ___   ___ / ___| |   |_ _|\n" +
+    " | |_| | / _ \\ | '__| | '_ ` _ \\  / _ \\ / __| |   | |    | | \n" +
+    " |  _  ||  __/ | |    | | | | | ||  __/ \\__ \\ |___| |___ | | \n" +
+    " |_| |_| \\___| |_|    |_| |_| |_| \\___| |___/\\____|_____|___|\n"
+);
         // Setting username 
         this.scan = new Scanner(System.in);
         System.out.print("Hermes-Client:/$ Enter username for chatting : ");
@@ -88,6 +102,13 @@ public class ClientHermes {
         }
         System.out.println("Clé AES : " + hexString);
         */
+
+        // Initializing clientCommands 
+        this.clientCommands = new HashMap<>();
+        this.clientCommands.put("/disconnect",this::disconnect);
+        this.clientCommands.put("/listConnected",this::listConnected);
+        
+
     } 
 
     
@@ -109,11 +130,20 @@ public class ClientHermes {
                     String partnerString = decipheredDatagram[1];
                     String message = (decipheredDatagram[2].split(";"))[2];
                     String time = (decipheredDatagram[2].split(";"))[1];
-                    // Detele old writed line 
-                    System.out.print("\r\033[K");
-                    // System.out.print("\033[1A\033[2K"); // 1A: moving up, 2K: delete all line
-                    System.out.println(time + "-" + partnerString + ":/$ " + message);
-                    System.out.print("Hermes-Client:/$ ");
+                    // Getting command if it's a command message
+                    String[] messageCut = message.split("-separator-");
+                    if (messageCut[0].equals(this.serverCommands[0]) && partnerString.equals("Server")) {
+                        this.disconnect();
+                    } else if (messageCut[0].equals(this.serverCommands[1]) && partnerString.equals("Server")) {
+                        String[] clients = ((messageCut[1].replace("[","")).replace("]","")).split(",");
+                        this.updateConnectedClients(clients);
+                    } else {
+                         // Detele old writed line 
+                        System.out.print("\r\033[K");
+                        // System.out.print("\033[1A\033[2K"); // 1A: moving up, 2K: delete all line
+                        System.out.println(time + "-" + partnerString + ":/$ " + message);
+                        System.out.print("Hermes-Client:/$ ");       
+                    }
 				}
 			} catch (Exception e) {
 				System.out.println("Hermes-Client:/$ Error while receiving message");
@@ -127,23 +157,60 @@ public class ClientHermes {
 
         // Loop for chatting 
         String msg = "" ;
-        while (!msg.equals("exit")) {
+        while (this.inputLoop) {
             System.out.print("\nHermes-Client:/$ ");
             msg = scan.nextLine();
-			// Create datagram to send message 
-			try {
-                byte[][] datagram = this.packet.cipherMessageAES(this.username, "all", msg);
-				this.out.writeObject(datagram);
-				// Delete entry line and write history
-				System.out.print("\033[1A\033[2K");
-				System.out.println(this.username + ":/$" + msg);
-			} catch (Exception e) {
-				System.out.println("Hermes-Client:/$ Error while encrypt datagram or sendding datas...");
-			}
+            // Checking if we don't type a command
+            String msgClean = msg.replace(" ", "");
+            if (this.clientCommands.containsKey(msgClean)) {
+                Runnable action = this.clientCommands.get(msgClean);
+                action.run();
+            } else {
+                // Create datagram to send message 
+                try {
+                    byte[][] datagram = this.packet.cipherMessageAES(this.username, "all", msg);
+                    this.out.writeObject(datagram);
+                    // Delete entry line and write history
+                    System.out.print("\033[1A\033[2K");
+                    System.out.println(this.username + ":/$" + msg);
+                } catch (Exception e) {
+                    System.out.println("Hermes-Client:/$ Error while encrypt datagram or sendding datas...");
+                }
+            }
         }
         // Exiting the app
         this.scan.close();
         System.exit(0);
+    }
+
+    public void updateConnectedClients(String[] clients) {
+        this.connectedClients = new String[clients.length];
+        for (int i = 0 ; i < clients.length; i++) {
+            this.connectedClients[i] = (clients[i].replace(" ", ""));
+        }
+    }
+
+    public void disconnect() {
+        // Disconnect from server
+        try {
+            this.in.close();
+            this.out.close();
+            this.socket.close();
+            System.out.println("Hermes-Client:/$ Disconnected from server. Exiting...");
+        } catch (Exception e) {
+            System.out.println("Failed to close connexion properly. Exiting...");
+        }
+    }
+
+    public void listConnected() {
+        if (this.connectedClients.length > 1) {
+            System.out.println("Hermes-Client:/$ Connected Clients :");
+            for (String client : this.connectedClients) {
+                if (!client.equals(this.username)) {
+                    System.err.println("+----- " + client);
+                }
+            }
+        }
     }
 
 
