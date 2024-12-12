@@ -1,0 +1,129 @@
+% Use documentclass{article}
+
+
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{ragged2e}
+\usepackage{amsfonts}
+\usepackage{systeme}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{comment}
+\usepackage{multicol}
+\usepackage{lipsum} 
+\usepackage{graphicx}
+\usepackage{stmaryrd}
+\usepackage{systeme}
+\usepackage{wrapfig}
+\usepackage{colortbl}
+\usepackage{cellspace}
+\usepackage{stmaryrd}
+\usepackage{ntheorem}
+\usepackage{lmodern}
+\usepackage{mathtools}
+\usepackage{wrapfig}
+\usepackage{ragged2e}
+\usepackage{tabularx}
+\usepackage{titlepic}
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{xcolor} % pour les couleurs
+\usepackage[linkbordercolor=white]{hyperref} % après avoir chargé xcolor
+\usepackage{systeme}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{mdframed}
+\usepackage{xparse} % Nécessaire pour définir des environnements avec arguments optionnels
+\usepackage[top=3cm, bottom=3cm, left=3.5cm, right=3.5cm]{geometry}
+
+% \setcounter{secnumdepth}{-1} % Désactive le compteur des parties
+
+% PAGE SETTINGS
+
+% \justifying
+
+% \setlength{\columnseprule}{1pt}
+% \def\columnseprulecolor{\color{black}}
+
+\newcolumntype{C}{>{$\displaystyle}Sc<$}
+\cellspacetoplimit=5pt
+\cellspacebottomlimit=5pt
+
+
+% MATHS SHORTHANDS
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\U}{\mathbb{U}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\B}{\mathcal{B}}
+
+\renewcommand{\epsilon}{\varepsilon}
+\renewcommand{\phi}{\varphi}
+\renewcommand{\rho}{\varrho}
+
+% MOD NOTATION
+
+\theorembodyfont{\upshape}
+
+% Définir un environnement pour encadrer les définitions avec un titre
+\NewDocumentEnvironment{definition}{O{}}
+{
+  \begin{mdframed}[linewidth=0pt,linecolor=gray,backgroundcolor=gray!10,roundcorner=5pt]
+  \textbf{Définition}%
+  \IfNoValueTF{#1}{}{~(\textbf{#1})} % Affiche le titre entre parenthèses et en gras s'il est fourni
+  . % Point à la fin
+}
+{
+  \end{mdframed}
+}
+
+% Définir un environnement pour encadrer les théorèmes avec un titre
+\NewDocumentEnvironment{theorem}{O{}}
+{
+  \begin{mdframed}[linewidth=1pt,linecolor=darkgray,backgroundcolor=darkgray!10,roundcorner=5pt]
+  \textbf{Théorème}%
+  \IfNoValueTF{#1}{}{~(\textbf{#1})} % Affiche le titre entre parenthèses et en gras s'il est fourni
+  . % Point à la fin
+}
+{
+  \end{mdframed}
+}
+
+% Définir un environnement pour encadrer les corollaires
+\NewDocumentEnvironment{corollary}{O{}}
+{
+  \begin{mdframed}[linewidth=1pt,linecolor=gray,backgroundcolor=gray!10,roundcorner=5pt]
+  \textbf{Corollaire}%
+  \IfNoValueTF{#1}{}{~(\textbf{#1})} % Affiche le titre entre parenthèses et en gras s'il est fourni
+  . % Point à la fin
+}
+{
+  \end{mdframed}
+}
+				
+
+\theoremstyle{plain}
+\newtheorem*{remark}{Remarque}
+\newtheorem*{proposition}{Proposition}
+\newtheorem*{lemma}{Lemme}
+\newtheorem*{prop}{Propriété}
+\newtheorem*{proof}{Démonstration}
+\newtheorem*{example}{Exemple}
+
+
+% OTHERS 
+
+
+%\newlength\tindent
+%\setlength{\tindent}{\parindent}
+%\setlength{\parindent}{0pt}
+%\renewcommand{\indent}{\hspace*{\tindent}}
+
+% Put begin and end document 
