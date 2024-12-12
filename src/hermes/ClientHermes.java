@@ -9,6 +9,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+    /**
+     * Class to connect a client to Hermes server in command-line
+     * @author winston2968
+     * @version 1.0
+     */
+
 public class ClientHermes {
 
 
@@ -29,6 +35,11 @@ public class ClientHermes {
     //                          Constructor
     // =====================================================================
 
+    /**
+     * ClientHermes constructor. 
+     * It starts the clients and try to connect to HermesServer. 
+     * When it's done, it instanciate security features.
+     */
     public ClientHermes() {
 
         System.out.println(
@@ -118,8 +129,12 @@ public class ClientHermes {
     //                          Chatting method
     // =====================================================================
 
+    /**
+     * Method for chatting on Hermes. 
+     * It contains a Thread to listen Socket input 
+     * and a loop for client message input. 
+     */
     public void chat() {
-
         // Initializing Listening Thread
         Thread listeningThread = new Thread(() -> {
 			byte[][] receivedDatagram ;
@@ -183,6 +198,10 @@ public class ClientHermes {
         System.exit(0);
     }
 
+    /**
+     * Method to update current connected clients list
+     * @param clients
+     */
     public void updateConnectedClients(String[] clients) {
         this.connectedClients = new String[clients.length];
         for (int i = 0 ; i < clients.length; i++) {
@@ -190,6 +209,9 @@ public class ClientHermes {
         }
     }
 
+    /**
+     * Method to disconnect properly from the server. 
+     */
     public void disconnect() {
         // Disconnect from server
         try {
@@ -202,6 +224,9 @@ public class ClientHermes {
         }
     }
 
+    /**
+     * List the contain of connected clients list. 
+     */
     public void listConnected() {
         if (this.connectedClients.length > 1) {
             System.out.println("Hermes-Client:/$ Connected Clients :");

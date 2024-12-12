@@ -5,6 +5,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+    /**
+     * CLI Hermes Server Management
+     * @author winston2968
+     * @version 1.0
+     */
+
 public class CommandListener implements Runnable {
     
     private List<ClientHandler> clientsList ;
@@ -16,6 +22,11 @@ public class CommandListener implements Runnable {
     //                          Constructor
     // =====================================================================
 
+    /**
+     * CommandListener constructor
+     * @param clients
+     * @param serv
+     */
     public CommandListener(List<ClientHandler> clients, ServerHermes serv) {
         this.scan = new Scanner(System.in);
         // Link to general server
@@ -36,6 +47,9 @@ public class CommandListener implements Runnable {
     //                     Thread always running
     // =====================================================================
 
+    /**
+     * Implemented method for listening admin command entries. 
+     */
     @Override
     public void run() {
         System.out.println("""
@@ -66,7 +80,9 @@ public class CommandListener implements Runnable {
     //                       Commands Methods
     // =====================================================================
 
-
+    /**
+     * Method to stop the server properly. 
+     */
     private void stopServer() {
         // Starting by disconnect all clients 
         this.killAll();
@@ -76,6 +92,9 @@ public class CommandListener implements Runnable {
         System.exit(0);
     }
 
+    /**
+     * Method to list current connected clients. 
+     */
     private void listClients() {
         // List all connected clients 
         System.out.println("Hermes-Clients:/$ Connected clients :");
@@ -84,6 +103,9 @@ public class CommandListener implements Runnable {
         }
     }
 
+    /** 
+     * Method to disconnect a client. 
+     */
     private void killClient() {
         // List users
         this.listClients();
@@ -104,6 +126,9 @@ public class CommandListener implements Runnable {
         System.out.println("Hermes-Client:/$ Client " + user + " succesfully disconnected !");
     }
 
+    /**
+     * Method to disconnect all connected clients. 
+     */
     private void killAll() {
         synchronized (this.clientsList) {
             while (!this.clientsList.isEmpty()) {
@@ -114,12 +139,18 @@ public class CommandListener implements Runnable {
         }
     }   
 
+    /**
+     * Method to list available commands. 
+     */
     private void help() {
         // Printing all command and description
         System.out.println("Hermes-Server:/$ Available commands :");
         System.out.println(this.commands.keySet().toString());
     }
 
+    /**
+     * Method to send a message to all clients. 
+     */
     private void broadcast() {
         // Get the message to broadcast
         System.out.println("Hermes-Server:/$ Enter message to broadcast...");

@@ -11,6 +11,12 @@ import java.security.PublicKey;
 import java.util.Enumeration;
 import java.util.Scanner;
 
+    /**
+     * Class which represent server for chatty
+     * @author winston2968
+     * @version 1.0
+     */
+
 
 public class ServerChatty {
     
@@ -24,7 +30,11 @@ public class ServerChatty {
     private String username ;
     private Datagram datagram ;
 
+     
 
+    /**
+     * ServerChatty constructor 
+     */
     public ServerChatty() {
         this.scan = new Scanner(System.in);
 		// Setting usename 
@@ -64,6 +74,10 @@ public class ServerChatty {
 
     }
 
+    /**
+     * Method to get currrent machine IP Address
+     */
+
     public void setAddress() {
         // Get current ip address
         Enumeration<NetworkInterface> e;
@@ -89,6 +103,11 @@ public class ServerChatty {
             error.printStackTrace();
         }
     }
+
+    /**
+     * Method to launch chat app.
+     * It listen Socket entry with a Thread an loop for unser entry. 
+     */
 
     public void chat() {
         System.out.println("Launched !");

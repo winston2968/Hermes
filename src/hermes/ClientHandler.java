@@ -7,6 +7,12 @@ import java.net.Socket;
 import java.security.PublicKey;
 import java.util.List;
 
+    /**
+     * Client management, server-side
+     * @author winston2968
+     * @version 1.0
+     */
+
 
 public class ClientHandler implements Runnable {
 
@@ -22,6 +28,14 @@ public class ClientHandler implements Runnable {
     // =====================================================================
     //                          Constructor
     // =====================================================================
+
+    /**
+     * Client Handler constructor 
+     * @param client
+     * @param clients
+     * @param serverPaquet
+     * @throws IOException
+     */
 
     public ClientHandler (Socket client, List<ClientHandler> clients, Package serverPaquet) throws IOException {
         // Add link to clients list for routing messages
@@ -63,6 +77,10 @@ public class ClientHandler implements Runnable {
     //                          Getter and Setter
     // =====================================================================
 
+    /**
+     * Getter for client username 
+     * @return username of corresponding connected client 
+     */
     public String getUsername() {
         return this.username ;
     }
@@ -71,6 +89,10 @@ public class ClientHandler implements Runnable {
     //                          Thread Always running
     // =====================================================================
 
+    /**
+     * Implemented method which listen socket from client. 
+     * 
+     */
     @Override
     public void run() {
         // Loop for listening client input 
@@ -98,6 +120,11 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+     * Method to broadcast messages to all other connected clients on the server
+     * @param message
+     * @param exclude
+     */
     public void broadcast(byte[][] message, String exclude) {
         synchronized(this.clientsList) {
             for (int i = 0 ; i < this.clientsList.size(); i++) {
@@ -121,10 +148,18 @@ public class ClientHandler implements Runnable {
     // =====================================================================
 
 
+    /**
+     * Method to simply send a datagram to a connected client
+     * @param datagram
+     * @throws IOException
+     */
     public void sendDatagramm(byte[][] datagram) throws IOException {
         this.out.writeObject(datagram);
     }
 
+    /**
+     * Method to close the current client connexion.  
+     */
     public void closeConnection() {
         try {
             // Stop listening thread

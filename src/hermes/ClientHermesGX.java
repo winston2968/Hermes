@@ -13,6 +13,12 @@ import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+    /**
+     * Hermes client class, graphics version
+     * @author winston2968
+     * @version 1.0
+     */
+
 
 public class ClientHermesGX extends JFrame implements ActionListener {
 
@@ -45,7 +51,9 @@ public class ClientHermesGX extends JFrame implements ActionListener {
     //                          Constructor
     // =====================================================================
 
-
+    /**
+     * ClientHermes constructor 
+     */
     public ClientHermesGX() {
         super("Connexion Client - Hermes");
         // Launching the connexion window
@@ -57,7 +65,10 @@ public class ClientHermesGX extends JFrame implements ActionListener {
     // =====================================================================
 
 
-    // Starting connexion, connect to the server and get username
+    /**
+     * Method to get info befire starting connexion. 
+     * Such as username and server IP Address. 
+     */
     public void connexionWindow() {
         // Initializing window structure
         Border grayBorder = BorderFactory.createLineBorder(Color.lightGray);
@@ -112,6 +123,10 @@ public class ClientHermesGX extends JFrame implements ActionListener {
     }
 
 
+    /**
+     * Method to start connexion with server. 
+     * Once it's done, it tries to secure connexion. 
+     */
     private void startConnexion() {
         // Try to connect to the server
         this.username = this.entryUsername.getText();
@@ -159,8 +174,12 @@ public class ClientHermesGX extends JFrame implements ActionListener {
     //                          Chatting window
     // =====================================================================
 
+    /**
+     * Chatting method.
+     * It create and open a window for message input, 
+     * connected clients list and messages entry. 
+     */
     public void chat() {
-
         // Chatting window
         this.setTitle("Hermes - ClientGX");
         this.getContentPane().removeAll();
@@ -267,6 +286,9 @@ public class ClientHermesGX extends JFrame implements ActionListener {
     //                          Connexion Management
     // =====================================================================
 
+    /**
+     * Method to disconnect properly from the server. 
+     */
     public void disconnect() {
         // Disconnect from server
         try {
@@ -280,7 +302,10 @@ public class ClientHermesGX extends JFrame implements ActionListener {
         
     }
 
-    
+    /**
+     * Method to update connected client list. 
+     * @param clients
+     */
     public void updateConnectedClients(String[] clients) {
         // Update graphic clients list
         SwingUtilities.invokeLater(() -> {

@@ -12,6 +12,12 @@ import java.time.format.DateTimeFormatter;
 
 import javax.crypto.Cipher;
 
+    /**
+     * Class which represent Datagram gestion for chatty
+     * @author winston2968
+     * @version 1.0
+     */
+
 public class Datagram {
 
     private KeyPairGenerator rsaGenerator ;
@@ -20,15 +26,13 @@ public class Datagram {
     private PublicKey hisPublicKey ;
     private PrivateKey myPrivateKey ;
 
-
-    /* I use a special pattern for datagrams. I want to save the date 
-     * when I send the datagram and who sent it.
-     * Datagram Format : Date;Hour;Username;Message
-     */
-
     // =====================================================================
     //                          Constructor
     // =====================================================================
+
+    /**
+     * Constructor for Datagram class
+     */
 
     public Datagram() {
         try {
@@ -47,10 +51,19 @@ public class Datagram {
     // =====================================================================
     //                          Getter and Setter
     // =====================================================================
+
+    /**
+     * Method to get Datagram RSA public key
+     * @return PublicKey une clé publique RSA
+     */
     public PublicKey getPublicKey() {
         return this.keyPair.getPublic();
     }
 
+    /**
+     * Method to modify current RSA public key
+     * @param key
+     */
     public void setHisPublicKey(PublicKey key) {
         this.hisPublicKey = key ;
     }
@@ -58,6 +71,15 @@ public class Datagram {
     // =====================================================================
     //                          Messages Conversions
     // =====================================================================
+
+    /**
+     * Method which convert a message, username and destinator to datagram format
+     * @param msg
+     * @param username
+     * @param destinator
+     * @return byte[] new datagram 
+     * @throws Exception
+     */
 
     public byte[] stringToByte(String msg, String username, String destinator) throws Exception {
         // Replace all ; in msg
@@ -76,6 +98,14 @@ public class Datagram {
         // Cipher message to send with partner public key 
         return this.cypher(messagePlain);
     }
+
+    /**
+     * Method which convert deciphered datagram to array of string 
+     * for message display 
+     * @param datas
+     * @return String[] date, sender username, destinator username and message  
+     * @throws Exception
+     */
     
     public String[] byteToString(byte[] datas) throws Exception {
         byte[] decryptedDatas = this.decypher(datas);
@@ -87,10 +117,23 @@ public class Datagram {
     //                          Cipher options
     // =====================================================================
 
+    /**
+     * Method which cipher byte array with RSA algorithm
+     * @param datas
+     * @return byte[] RSA cyphered 
+     * @throws Exception
+     */
     private byte[] cypher(byte[] datas) throws Exception{
         this.cypher.init(Cipher.ENCRYPT_MODE,this.hisPublicKey);
         return cypher.doFinal(datas);
     }
+
+    /**
+     * Method which decipher byte array with RSA algorithm
+     * @param datas
+     * @return byte[] RSA deciphered
+     * @throws Exception
+     */
 
     private byte[] decypher(byte[] datas) throws Exception {
         this.cypher.init(Cipher.DECRYPT_MODE,this.myPrivateKey);

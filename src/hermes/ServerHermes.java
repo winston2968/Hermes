@@ -12,6 +12,12 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
+    /**
+     * Server management/package routing
+     * @author winston2968
+     * @version 1.0
+     */
+
 public class ServerHermes {
     
     // Server features 
@@ -25,12 +31,14 @@ public class ServerHermes {
     // Client management
     private List<ClientHandler> clientsList = Collections.synchronizedList(new ArrayList<>());
  
-
-    
     // =====================================================================
     //                          Constructor
     // =====================================================================
 
+    /**
+     * Constructor for ServerHermes. 
+     * It instanciate the socket and set up security features. 
+     */
     public ServerHermes() {
         System.out.println(
             "  _   _                                    \n" +
@@ -89,6 +97,14 @@ public class ServerHermes {
     //                          Getters
     // =====================================================================
 
+    /**
+     * Create a dephered datagram to send it on the socket. 
+     * @param message
+     * @param username
+     * @param destinator
+     * @return ciphered datagram
+     * @throws Exception
+     */
     public byte[][] createDatagram(String message, String username, String destinator) throws Exception {
         return this.packet.cipherMessageAES(username, destinator, message);
     }
@@ -98,9 +114,13 @@ public class ServerHermes {
     // =====================================================================
 
 
-
+    /**
+     * Method to start the server. 
+     * It listen clients connexion requests and, 
+     * when a new client arrives, starts a Thread to listen
+     * its entries. 
+     */
     public void runServer() {
-
         // Initializing accepting client thread
         Thread listenningNewClients = new Thread(() -> {
             System.out.println("Hermes-Server:/$ Server succesfully started !");
@@ -145,7 +165,10 @@ public class ServerHermes {
         }
     } */
 
-    // Send clients list to all clients connected
+    /**
+     * Method to send the current connected 
+     * clients list to all clients. 
+     */
     public void updateConnectedClients() {
         synchronized (this.clientsList) {
             // Convert client list to String[] of client's username

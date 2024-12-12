@@ -8,8 +8,19 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
+    /**
+     * Graphical informations display
+     * @author winston2968
+     * @version 1.0
+     */
+
 public class InfoWindow extends JFrame implements MouseListener {
     
+    /**
+     * InfoWindow constructor
+     * @param messageType
+     * @param message
+     */
     public InfoWindow (String messageType, String message) {
         super(messageType);
         this.add(new JLabel(message), BorderLayout.CENTER);

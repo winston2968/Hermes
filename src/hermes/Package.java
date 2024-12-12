@@ -14,6 +14,12 @@ import javax.crypto.spec.SecretKeySpec;
 
 import chatty.Datagram;
 
+    /**
+     * Package management for Hermes classes. 
+     * @author winston2968
+     * @version 1.0
+     */
+
 public class Package extends Datagram {
     
     private KeyPairGenerator rsaGenerator ;
@@ -23,6 +29,9 @@ public class Package extends Datagram {
     private PrivateKey myPrivateKey ;
     public SecretKey aesKey ;
 
+    /**
+     * Package constructor
+     */
     public Package() {
         try {
             // Generating RSA public/private key
@@ -57,7 +66,11 @@ public class Package extends Datagram {
     //                     Sendding/Getting AES key
     // =====================================================================
 
-    // Return AES secret key ciphred with RSA parter public key to send it throught socket
+    /**
+     * Method to send AES key
+     * @return AES secret key ciphered with RSA parter public key to send it throught socket
+     * @throws Exception
+     */
     public byte[] getAESCiphered() throws Exception {
         // Cipher AES key with the RSA public key
         this.cipher = Cipher.getInstance("RSA");
@@ -66,9 +79,11 @@ public class Package extends Datagram {
         return this.cipher.doFinal(aesKeyEncoded);
     }
 
-    // Get the encrypted AES key from socket,
-    // decioher it with own RSA private key and instaciate new AES private key
-    // for messages exchange
+    /**
+     * Method to get AES key from the socket
+     * @param aesKey
+     * @throws Exception
+     */
     public void setAESCiphered(byte[] aesKey) throws Exception {
         // Decipher received AES key with RSA
         this.cipher = Cipher.getInstance("RSA");
@@ -81,6 +96,12 @@ public class Package extends Datagram {
     //                     Messages conversion
     // =====================================================================
 
+    /**
+     * Method which cipher a text with AES
+     * @param text
+     * @return message ciphered with AES
+     * @throws Exception
+     */
     public byte[] cipherStringAES(String text) throws Exception {
         // Initializing cipher tool 
         this.cipher = Cipher.getInstance("AES");
@@ -88,6 +109,12 @@ public class Package extends Datagram {
         return this.cipher.doFinal(text.getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * Method which decipher a byte[] with AES
+     * @param datas
+     * @return String of deciphered message
+     * @throws Exception
+     */
     public String decipherToStringAES(byte[] datas) throws Exception {
         // Initializing cipher tool 
         this.cipher = Cipher.getInstance("AES");
@@ -95,6 +122,14 @@ public class Package extends Datagram {
         return new String(this.cipher.doFinal(datas), StandardCharsets.UTF_8);
     }
 
+    /**
+     * Method which create a datagram to send it on socket
+     * @param username
+     * @param destinator
+     * @param message
+     * @return new datagram ciphered with AES
+     * @throws Exception
+     */
     public byte[][] cipherMessageAES(String username, String destinator, String message) throws Exception {
         // Initializing cipher tool 
         this.cipher = Cipher.getInstance("AES");
@@ -111,6 +146,12 @@ public class Package extends Datagram {
         return new byte[][] {destinatorCiphered,usernameCiphered,messageCiphered};
     }
 
+    /**
+     * Method which decipher a datagram received on the socket
+     * @param packet
+     * @return the deciphered datagram
+     * @throws Exception
+     */
     public String[] decipherMessageAES(byte[][] packet) throws Exception {
         // Initializing decipher tool
         this.cipher = Cipher.getInstance("AES");

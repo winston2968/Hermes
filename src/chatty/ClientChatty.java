@@ -6,6 +6,12 @@ import java.net.Socket;
 import java.security.PublicKey;
 import java.util.Scanner;
 
+	/**
+	 * Class which represent client for Chatty
+	 * @author Winston2968
+	 * @version 1.0
+	 */
+
 public class ClientChatty {
 
 	private Socket socket ;
@@ -14,6 +20,13 @@ public class ClientChatty {
     private ObjectOutputStream out ;
 	private String username ; 
 	private Datagram datagram ;
+
+	/**
+	 * ClientChatty constructor 
+	 * 
+	 * @param serverAddress
+	 * @param port
+	 */
 
 	public ClientChatty(String serverAddress, int port) {
 		this.scan = new Scanner(System.in);
@@ -47,7 +60,11 @@ public class ClientChatty {
         }
 	}
 
-
+	
+	 
+	/**
+	 * Chatting method which listen Socket input and loop for user entry
+	 */
     public void chat() {
 
 		// System.out.println("Launched !");
